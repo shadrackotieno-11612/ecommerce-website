@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+:root {
+  --bg-main: #fffdf0;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #fef3c7;
+  --border-color: #e5e7eb;
+  --text-main: #111827;
+  --text-muted: #4b5563;
+  --accent: #d97706;
+}
+
+/* Universal crisp black, high-contrast input styling for all text inputs */
+input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background-color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  opacity: 1 !important;
+}
+
+/* Ensure autofill maintains black font and white background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #000000 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ACCESSIBLE BRIGHT THEMES (Dark themes removed for sight accessibility) */
+
+/* 1. Automatic Bright Mode */
+html.theme-bright-auto,
+html:not([class*="theme-"]) {
+  --bg-main: #fffdf0;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #fef9c3;
+  --border-color: #fde047;
+  --text-main: #1c1917;
+  --text-muted: #57534e;
+  --accent: #d97706;
+}
+
+/* 2. High-Contrast Sight Accessibility Mode (Maximum Contrast: Jet Black & Pure White) */
+html.theme-bright-high-contrast {
+  --bg-main: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #fef08a;
+  --border-color: #000000;
+  --text-main: #000000;
+  --text-muted: #1f2937;
+  --accent: #b45309;
+}
+
+html.theme-bright-high-contrast body {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+html.theme-bright-high-contrast button,
+html.theme-bright-high-contrast a,
+html.theme-bright-high-contrast input,
+html.theme-bright-high-contrast select {
+  outline-color: #000000 !important;
+  border-width: 2px !important;
+}
+
+/* 3. Savannah Sunlit Amber Mode */
+html.theme-bright-solar {
+  --bg-main: #fffbeb;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #fef3c7;
+  --border-color: #fde68a;
+  --text-main: #1c1917;
+  --text-muted: #57534e;
+  --accent: #d97706;
+}
+
+/* 4. Clean Daylight Slate */
+html.theme-light-clean {
+  --bg-main: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f1f5f9;
+  --border-color: #cbd5e1;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --accent: #059669;
+}
+
+/* 5. Sight-Assist Large Print Bright */
+html.theme-bright-large-print {
+  --bg-main: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #e0f2fe;
+  --border-color: #38bdf8;
+  --text-main: #0c4a6e;
+  --text-muted: #0369a1;
+  --accent: #0284c7;
+  font-size: 105%;
+}
+
+/* Global bright rendering overrides for all components */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Make dark container utilities render as clean, accessible bright surfaces */
+.bg-stone-950,
+.bg-stone-900,
+.bg-stone-900\/90,
+.bg-stone-900\/80,
+.bg-stone-900\/60 {
+  background-color: #ffffff !important;
+  color: #1c1917 !important;
+  border-color: #e4e4e7 !important;
+}
+
+.border-stone-800,
+.border-stone-800\/80,
+.border-stone-800\/60,
+.border-stone-700 {
+  border-color: #e4e4e7 !important;
+}
+
+.text-white,
+.text-stone-100,
+.text-stone-200 {
+  color: #18181b !important;
+}
+
+.text-stone-300,
+.text-stone-400 {
+  color: #52525b !important;
+}
+
+header {
+  background-color: #ffffff !important;
+  border-color: #e4e4e7 !important;
+}
+
+footer {
+  background-color: #fafaf9 !important;
+  border-color: #e4e4e7 !important;
+  color: #27272a !important;
+}
+
+/* Sight Accessibility Enhancements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #d97706 !important;
+  outline-offset: 2px !important;
+}
+
+/* Custom accessible scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f5f4;
+}
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 5px;
+  border: 2px solid #f5f5f4;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a29e;
+}
