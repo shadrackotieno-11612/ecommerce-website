@@ -176,7 +176,7 @@ export const Footer: React.FC<{
         {/* Bottom Bar: Copyright & Verified Badges */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-600 font-semibold gap-4">
           <div>
-            © {new Date().getFullYear()} JITU STOREs Ltd. {t.footer.allRightsReserved}
+            © {new Date().getFullYear()} Zawadi Kenya Ltd. {t.footer.allRightsReserved}
           </div>
           <div className="flex items-center gap-3">
             <span className="px-2.5 py-1 rounded-md bg-white border-2 border-emerald-400 text-emerald-800 font-black text-[11px]">

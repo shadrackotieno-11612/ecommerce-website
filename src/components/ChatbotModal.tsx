@@ -31,7 +31,7 @@ const QUICK_PROMPTS = [
   'What is special about Kenyan AA Coffee?',
   'Can I book a Safari tour and buy goods together?',
   'How does delivery across Kenyan counties work?',
-  'Jambo! Niambie kuhusu JITU STOREs (Swahili)',
+  'Jambo! Niambie kuhusu Zawadi Kenya (Swahili)',
 ];
 
 export const ChatbotModal: React.FC<ChatbotModalProps> = ({
@@ -46,7 +46,7 @@ export const ChatbotModal: React.FC<ChatbotModalProps> = ({
       id: 'welcome',
       role: 'assistant',
       content:
-        'Jambo! Welcome to JITU STOREs. I am Simba AI, your dedicated customer concierge. How may I assist you with our Kenyan goods, professional trade services, or Safaricom M-Pesa payments today?',
+        'Jambo! Welcome to Zawadi Kenya. I am Simba AI, your dedicated customer concierge. How may I assist you with our Kenyan goods, professional trade services, or Safaricom M-Pesa payments today?',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -96,7 +96,7 @@ export const ChatbotModal: React.FC<ChatbotModalProps> = ({
       const botMsg: ChatMessage = {
         id: `bot_${Date.now()}`,
         role: 'assistant',
-        content: data.reply || 'Thank you for reaching out to JITU STOREs. How else may I assist you?',
+        content: data.reply || 'Thank you for reaching out to Zawadi Kenya. How else may I assist you?',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
@@ -108,7 +108,7 @@ export const ChatbotModal: React.FC<ChatbotModalProps> = ({
         {
           id: `bot_err_${Date.now()}`,
           role: 'assistant',
-          content: 'I experienced a brief connection hiccup. You can also reach our Nairobi office at support@jitustores.co.ke or call +254 700 123 456.',
+          content: 'I experienced a brief connection hiccup. You can also reach our Nairobi office at shadiotis2@gmail.com or call +254 712 345 678.',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -123,7 +123,7 @@ export const ChatbotModal: React.FC<ChatbotModalProps> = ({
         id: 'welcome',
         role: 'assistant',
         content:
-          'Jambo! Welcome to JITU STOREs. How can I assist you with your orders, products, or services?',
+          'Jambo! Welcome to Zawadi Kenya. How can I assist you with your orders, products, or services?',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
@@ -143,7 +143,7 @@ export const ChatbotModal: React.FC<ChatbotModalProps> = ({
               <div className="flex items-center gap-1.5 font-extrabold text-white text-base">
                 <span>Simba AI</span>
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  JITU Support
+                  Zawadi Support
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-emerald-400">

@@ -1,5 +1,7 @@
+import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import pg from 'pg';
 import {
@@ -12,25 +14,44 @@ import {
   SupportedLanguage,
 } from '../types/index.ts';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const { Pool } = pg;
 
-// Check if PostgreSQL environment variables are provided
-const hasPostgresConfig = Boolean(
-  process.env.DATABASE_URL ||
-  process.env.POSTGRES_URL ||
-  (process.env.SQL_HOST && process.env.SQL_USER && process.env.SQL_DB_NAME)
-);
+// Warning if DATABASE_URL is not set in production mode
+if (!process.env.DATABASE_URL && process.env.NODE_ENV === 'production') {
+  console.warn(
+    '[Database Warning] DATABASE_URL environment variable is not configured. The app will boot using in-memory storage until DATABASE_URL is set.'
+  );
+}
 
 export let pgPool: pg.Pool | null = null;
+let isInitialized = false;
 
-if (hasPostgresConfig) {
-  try {
-    if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
+export function getPgPool(): pg.Pool | null {
+  if (pgPool) return pgPool;
+
+  const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+
+  if (connectionString) {
+    try {
       pgPool = new Pool({
-        connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        connectionString,
+        ssl:
+          process.env.NODE_ENV === 'production' || connectionString.includes('sslmode=require')
+            ? { rejectUnauthorized: false }
+            : undefined,
       });
-    } else {
+      return pgPool;
+    } catch (err) {
+      console.error('[PostgreSQL] Failed to initialize pool with DATABASE_URL:', err);
+      return null;
+    }
+  }
+
+  // Fallback to individual parameters if present
+  if (process.env.SQL_HOST && process.env.SQL_USER && process.env.SQL_DB_NAME) {
+    try {
       pgPool = new Pool({
         host: process.env.SQL_HOST,
         port: Number(process.env.SQL_PORT || 5432),
@@ -38,31 +59,29 @@ if (hasPostgresConfig) {
         password: process.env.SQL_PASSWORD,
         database: process.env.SQL_DB_NAME,
       });
+      return pgPool;
+    } catch (err) {
+      console.error('[PostgreSQL] Failed to initialize pool with host parameters:', err);
+      return null;
     }
-    console.log('PostgreSQL connection pool initialized.');
-  } catch (err) {
-    console.warn('PostgreSQL pool initialization failed, using file repository:', err);
-    pgPool = null;
   }
+
+  return null;
 }
 
-// File-persisted local relational store
-const DATA_DIR = path.resolve(process.cwd(), 'data');
-const DB_FILE = path.join(DATA_DIR, 'zawadi_store.json');
-
-export interface DatabaseState {
+// In-memory fallback state used only in local development when DATABASE_URL is not set
+interface MemoryDatabaseState {
   users: (User & { passwordHash: string })[];
   categories: Category[];
   products: Product[];
   services: Service[];
   orders: Order[];
   payments: PaymentTransaction[];
-  wishlists: Record<string, string[]>; // userId -> productIds[]
+  wishlists: Record<string, string[]>;
   carts: Record<string, { itemId: string; itemType: 'product' | 'service'; quantity: number }[]>;
 }
 
-// In-memory state synchronized to disk
-let memoryDb: DatabaseState = {
+const memoryDb: MemoryDatabaseState = {
   users: [],
   categories: [],
   products: [],
@@ -73,97 +92,8 @@ let memoryDb: DatabaseState = {
   carts: {},
 };
 
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-}
-
-function persistDb() {
-  try {
-    ensureDataDir();
-    fs.writeFileSync(DB_FILE, JSON.stringify(memoryDb, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Failed to persist database state:', err);
-  }
-}
-
-export function loadDb(): DatabaseState {
-  try {
-    ensureDataDir();
-    if (fs.existsSync(DB_FILE)) {
-      const data = fs.readFileSync(DB_FILE, 'utf-8');
-      memoryDb = JSON.parse(data);
-      return memoryDb;
-    }
-  } catch (err) {
-    console.error('Failed to load database file, re-initializing seed data:', err);
-  }
-  initSeedData();
-  persistDb();
-  return memoryDb;
-}
-
-export function initSeedData() {
-  const salt = bcrypt.genSaltSync(10);
-  const adminPasswordHash = bcrypt.hashSync('Admin@2026!', salt);
-  const customerPasswordHash = bcrypt.hashSync('Customer@2026!', salt);
-
-  const initialUsers: (User & { passwordHash: string })[] = [
-    {
-      id: 'usr_admin_001',
-      fullName: 'Amina Wanjiku',
-      email: 'admin@jitustores.co.ke',
-      phone: '254712345678',
-      role: 'admin',
-      preferredLanguage: 'en',
-      deliveryAddress: 'JITU STOREs Headquarters, Kimathi Street',
-      county: 'Nairobi',
-      town: 'Nairobi CBD',
-      createdAt: '2026-01-15T08:00:00Z',
-      passwordHash: adminPasswordHash,
-    },
-    {
-      id: 'usr_admin_compat',
-      fullName: 'Amina Wanjiku (Zawadi)',
-      email: 'admin@zawadi.co.ke',
-      phone: '254712345678',
-      role: 'admin',
-      preferredLanguage: 'en',
-      deliveryAddress: 'JITU STOREs Headquarters, Kimathi Street',
-      county: 'Nairobi',
-      town: 'Nairobi CBD',
-      createdAt: '2026-01-15T08:00:00Z',
-      passwordHash: adminPasswordHash,
-    },
-    {
-      id: 'usr_cust_002',
-      fullName: 'David Kiprono',
-      email: 'customer@jitustores.co.ke',
-      phone: '254798765432',
-      role: 'customer',
-      preferredLanguage: 'sw',
-      deliveryAddress: 'Westlands Commercial Park, Block B',
-      county: 'Nairobi',
-      town: 'Westlands',
-      createdAt: '2026-02-10T10:30:00Z',
-      passwordHash: customerPasswordHash,
-    },
-    {
-      id: 'usr_cust_compat',
-      fullName: 'David Kiprono (Zawadi)',
-      email: 'customer@zawadi.co.ke',
-      phone: '254798765432',
-      role: 'customer',
-      preferredLanguage: 'sw',
-      deliveryAddress: 'Westlands Commercial Park, Block B',
-      county: 'Nairobi',
-      town: 'Westlands',
-      createdAt: '2026-02-10T10:30:00Z',
-      passwordHash: customerPasswordHash,
-    },
-  ];
-
+// Seed catalog definition (Categories, Products, Services)
+export function getCatalogSeedData() {
   const initialCategories: Category[] = [
     {
       id: 'cat_coffee',
@@ -448,223 +378,83 @@ export function initSeedData() {
         sw: 'Imetoka machimbo ya Tabaka, Kisii. Kila kinyago kinachongwa kwa mkono, kulainishwa na maji na kung’arishwa kwa asili kuonyesha rangi nzuri za asili.',
         lg: 'Yabumbibwa n’emikono okuva mu mayinja g’e Tabaka mu Kisii, erina obunyiikivu n’obulungi obw’ekitalo.',
         zh: '采自肯尼亚基西郡塔巴卡天然矿区，工匠世代相传的水磨雕琢技艺，手感温润如玉，象征家庭美满与团结。',
-        es: 'Tallada a mano en Tabaka, condado de Kisii. Cada pieza es pulida con agua para revelar hermosos tonos terrosos.',
-        pt: 'Entalhada à mão em Tabaka, condado de Kisii. Cada escultura é polida com água para realçar os tons terrosos naturais.',
+        es: 'Esculpida a mano en Tabaka, condado de Kisii, pulida con agua para revelar sus tonos terrosos naturales.',
+        pt: 'Esculpida à mão em Tabaka, condado de Kisii, polida com água para realçar seus tons terrosos naturais.',
       },
       price: 2750,
       images: [
-        'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80',
       ],
       categoryId: 'cat_crafts',
       categoryName: 'Handmade Crafts & Art',
-      stockQuantity: 14,
+      stockQuantity: 15,
       isAvailable: true,
       featured: false,
       rating: 4.8,
       reviewCount: 16,
       origin: 'Tabaka, Kisii County',
-      weight: '850g',
-      createdAt: '2026-02-05T15:00:00Z',
-    },
-    {
-      id: 'prod_007',
-      sku: 'ZWD-BEA-007',
-      slug: 'maasai-beaded-choker-set',
-      name: {
-        en: 'Traditional Maasai Beaded Choker & Bracelet Set',
-        sw: 'Seti ya Mkufu na Bangili ya Ushanga ya Kimaasai',
-        lg: 'Ebikomo n’Eby’omu Bulago eby’Ensimbi eby’Abaamaasai',
-        zh: '马赛传统手工玻璃串珠项圈与手镯套装',
-        es: 'Juego de Gargantilla y Pulsera de Cuentas Masái',
-        pt: 'Conjunto de Gargantilha e Bracelete de Miçangas Maasai',
-      },
-      description: {
-        en: 'Hand-strung with vibrant glass beads honoring the ceremonial colors of bravery (red), peace (white), and energy (blue). Comfortable wire clasp.',
-        sw: 'Imetengenezwa kwa ushanga safi wa vioo unaoonyesha rangi za kishujaa (nyekundu), amani (nyeupe), na nguvu (bluu).',
-        lg: 'Ezitungiddwa n’obukugu nga ziriko amabala ag’obumu, obuvumu n’emirembe.',
-        zh: '遵循马赛古老工序，手工穿缀高密度琉璃彩珠，红色代表勇气，白色代表和平，蓝色代表能量与生命。',
-        es: 'Enhebradas a mano con cuentas de vidrio tradicionales en los colores ceremoniales masái que simbolizan valentía, paz y energía.',
-        pt: 'Feitas à mão com contas de vidro coloridas que celebram as cores cerimoniais da bravura, paz e energia do povo Maasai.',
-      },
-      price: 2200,
-      images: [
-        'https://images.unsplash.com/photo-1611591475816-3a7cb45d4750?auto=format&fit=crop&w=800&q=80',
-      ],
-      categoryId: 'cat_crafts',
-      categoryName: 'Handmade Crafts & Art',
-      stockQuantity: 30,
-      isAvailable: true,
-      featured: false,
-      rating: 4.9,
-      reviewCount: 31,
-      origin: 'Kajiado & Narok Counties',
-      weight: '150g',
-      createdAt: '2026-02-08T10:00:00Z',
-    },
-    {
-      id: 'prod_008',
-      sku: 'ZWD-TEA-008',
-      slug: 'kericho-purple-artisan-tea-250g',
-      name: {
-        en: 'Kericho Highland Artisan Purple Loose Tea (250g)',
-        sw: 'Chai ya Zambarau ya Kericho ya Kiasili (Gramu 250)',
-        lg: 'Caayi wa Kericho Owa Kkaki (Gulaamu 250)',
-        zh: '肯尼亚凯里乔高海拔天然花青素紫茶 (250克)',
-        es: 'Té Morado Artesanal de las Tierras de Kericho (250g)',
-        pt: 'Chá Roxo Artesanal de Kericho (250g)',
-      },
-      description: {
-        en: 'An exclusive Kenyan varietal rich in anthocyanins and health polyphenols, grown at 2,000m above sea level with sweet earthy notes and purple hue.',
-        sw: 'Aina ya kipekee ya chai ya Kenya iliyo na virutubisho vingi vya afya, inayolimwa mita 2,000 juu ya usawa wa bahari katika mashamba ya Kericho.',
-        lg: 'Caayi ow’enjawulo asangibwa mu nsozi z’e Kericho, alina akaloosa akasuffu n’eddagala erizimba omubiri.',
-        zh: '生长于东非大裂谷 2000 米高原茶园的肯尼亚特有茶树品种，天然富含高倍花青素，汤色紫润，口感甘醇柔滑。',
-        es: 'Una variedad exclusiva de Kenia rica en antocianinas y antioxidantes, cosechada a más de 2.000 metros de altitud.',
-        pt: 'Variedade exclusiva do Quênia cultivada a mais de 2.000 metros de altitude em Kericho, rica em antocianinas naturais.',
-      },
-      price: 950,
-      images: [
-        'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80',
-      ],
-      categoryId: 'cat_coffee',
-      categoryName: 'Kenyan Coffee & Tea',
-      stockQuantity: 50,
-      isAvailable: true,
-      featured: false,
-      rating: 4.6,
-      reviewCount: 14,
-      origin: 'Kericho County',
-      weight: '250g Tin',
-      createdAt: '2026-02-12T13:00:00Z',
-    },
-    {
-      id: 'prod_009',
-      sku: 'ZWD-OLI-009',
-      slug: 'kenyan-wild-olive-salad-servers',
-      name: {
-        en: 'Hand-carved Wild Olive Wood Salad Server Pair',
-        sw: 'Vijiko Vikubwa vya Saladi vya Mti wa Mzeituni wa Pori',
-        lg: 'Ebijiko by’Emikono eby’Omuti gw’Omuzaituni ogw’omu Nsiko',
-        zh: '肯尼亚野生橄榄木手工雕花沙拉勺叉礼盒套',
-        es: 'Juego de Cubiertos para Ensalada en Madera de Olivo Silvestre',
-        pt: 'Conjunto de Talheres para Salada em Madeira de Oliveira Selvagem',
-      },
-      description: {
-        en: 'Carved from naturally fallen Kenyan wild olive branches, highlighting dramatic grain swirls and finished with organic coconut oil.',
-        sw: 'Vimechongwa kutoka kwenye matawi ya miti ya mizaituni iliyoanguka kiasili, vikiwa na mistari mizuri na kupakwa mafuta safi ya nazi.',
-        lg: 'Byakolebwa okuva mu miti gy’omuzaituni emizibu, birina enkula ennungi n’obukugu obusuffu.',
-        zh: '甄选肯尼亚自然老熟枯落的野生橄榄木整木手工雕琢，木纹如行云流水，天然椰子油养护，安全环保。',
-        es: 'Tallados en madera de olivo silvestre de ramas caídas naturalmente, con preciosas vetas y acabado en aceite de coco orgánico.',
-        pt: 'Esculpidos em madeira de oliveira selvagem queniana com acabamento em óleo de coco natural, revelando veios únicos.',
-      },
-      price: 1950,
-      images: [
-        'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80',
-      ],
-      categoryId: 'cat_crafts',
-      categoryName: 'Handmade Crafts & Art',
-      stockQuantity: 28,
-      isAvailable: true,
-      featured: false,
-      rating: 4.9,
-      reviewCount: 18,
-      origin: 'Rift Valley Woodcrafters',
-      weight: '350g',
-      createdAt: '2026-02-15T09:30:00Z',
-    },
-    {
-      id: 'prod_010',
-      sku: 'ZWD-BAO-010',
-      slug: 'organic-baobab-marula-body-butter',
-      name: {
-        en: 'Coastal Organic Baobab & Marula Whipped Body Butter (200ml)',
-        sw: 'Siagi ya Mwili ya Mbuyu na Marula kutoka Pwani (Mililita 200)',
-        lg: 'Omuzigo gw’Omubiri ogwa Baobab ne Marula (Miliriita 200)',
-        zh: '肯尼亚沿海野生猴面包树籽油与马鲁拉焕采润肤霜 (200ml)',
-        es: 'Manteca Corporal Batida de Baobab y Marula (200ml)',
-        pt: 'Manteiga Corporal Batida de Baobá e Marula (200ml)',
-      },
-      description: {
-        en: 'Cold-pressed wild baobab seed oil blended with golden marula oil and raw nilotica shea butter. Deeply nourishing and rejuvenating.',
-        sw: 'Mafuta ya mbegu za mbuyu yaliyokamuliwa kiasili yakichanganywa na marula na siagi ya shea. Yanalinda na kulainisha ngozi vizuri sana.',
-        lg: 'Ebijanjaalo by’omu nsiko ebirimu amafuta agawa omubiri obulamu n’okunyirira okutukula.',
-        zh: '冷压萃取肯尼亚沿海古树猴面包树籽油与黄金马鲁拉果油，深层滋养保湿，抗氧修护肌肤。',
-        es: 'Aceite de semilla de baobab silvestre prensado en frío con marula dorada y manteca de karité cruda para una hidratación profunda.',
-        pt: 'Óleo de semente de baobá selvagem prensado a frio com marula dourada e manteiga de karité para hidratação intensiva.',
-      },
-      price: 1650,
-      images: [
-        'https://images.unsplash.com/photo-1608248597359-5509930773d5?auto=format&fit=crop&w=800&q=80',
-      ],
-      categoryId: 'cat_organic',
-      categoryName: 'Organic Farm Goods',
-      stockQuantity: 36,
-      isAvailable: true,
-      featured: false,
-      rating: 4.9,
-      reviewCount: 27,
-      origin: 'Kilifi, Coastal Kenya',
-      weight: '200ml Glass Jar',
-      createdAt: '2026-02-18T11:45:00Z',
+      weight: '1.2kg',
+      createdAt: '2026-02-03T15:00:00Z',
     },
   ];
 
   const initialServices: Service[] = [
     {
       id: 'serv_001',
-      slug: 'nairobi-national-park-safari',
+      slug: 'nairobi-national-park-half-day-safari',
       name: {
         en: 'Nairobi National Park Half-Day Wildlife Safari & Guide',
-        sw: 'Mwongozo wa Safari ya Nusu Siku katika Mbuga ya Wanyama ya Nairobi',
-        lg: 'Omukulembeze w’Olugendo mu Kkuumiro ly’Ebisolo ery’e Nairobi',
-        zh: '内罗毕国家公园半日野生动物游猎与专业向导服务',
-        es: 'Safari de Medio Día y Guía en el Parque Nacional de Nairobi',
-        pt: 'Safári de Meio Dia e Guia no Parque Nacional de Nairóbi',
+        sw: 'Safari ya Nusu Siku ya Hifadhi ya Taifa ya Nairobi',
+        lg: 'Olugendo lwa Safari olw’Ekitundu ky’Olunaku mu Nairobi',
+        zh: '内罗毕国家公园半日野生动物探秘游猎 (含专业金牌向导)',
+        es: 'Safari Guiado de Medio Día en el Parque Nacional de Nairobi',
+        pt: 'Safári Guiado de Meio Dia no Parque Nacional de Nairóbi',
       },
       description: {
-        en: 'Experience endangered black rhinos, lions, and giraffes against Nairobi’s skyline. Includes customized 4x4 pop-up roof Land Cruiser and licensed naturalist guide.',
-        sw: 'Furahia kuona vifaru weusi walio hatarini, simba, na twiga mbele ya majengo marefu ya Nairobi. Inajumuisha gari la 4x4 na mwongozo mwenye leseni.',
-        lg: 'Laba enkula z’ensolo zonna ez’omu kibira n’empologoma nga oli mu mmotoka ennungi eya 4x4 eriko abakulembeze.',
-        zh: '置身“世界唯一背靠现代都会天际线的国家公园”，近距离探访濒危黑犀牛、狮群与长颈鹿。配备专业 4x4 顶篷升降游猎越野车与持证自然学家向导。',
-        es: 'Observe rinocerontes negros, leones y jirafas frente al horizonte de Nairobi. Incluye vehículo 4x4 adaptado y guía naturalista titulado.',
-        pt: 'Veja rinocerontes-negros, leões e girafas com a linha do horizonte de Nairóbi ao fundo. Inclui veículo 4x4 com teto retrátil e guia credenciado.',
+        en: 'Experience majestic lions, endangered black rhinos, giraffes, and zebras against the city skyline in a custom 4x4 pop-up roof safari vehicle with a KPSGA-certified guide.',
+        sw: 'Tazama simba, vifaru weusi walio hatarini kutoweka, twiga na punda milia mbele ya majengo marefu ya jiji ukiwa ndani ya gari la 4x4 na kiongozi aliyeidhinishwa.',
+        lg: 'Laba empologoma, enkura ez’omuwendo, n’ebisolo ebirala n’omukulembeze omukugu mu mmotoka eya 4x4.',
+        zh: '乘坐四驱升顶越野游猎车，由肯尼亚专业级持牌野生动物向导陪同，在城市天际线背景下探寻雄狮、珍稀黑犀牛、长颈鹿与斑马群。',
+        es: 'Avista leones, rinocerontes negros, jirafas y cebras con la silueta de Nairobi de fondo en vehículo 4x4 adaptado con guía profesional.',
+        pt: 'Veja leões, rinocerontes negros, girafas e zebras com o skyline da cidade ao fundo em veículo 4x4 adaptado com guia credenciado.',
       },
       price: 9500,
-      duration: '5 Hours (Morning / Afternoon)',
+      duration: '5 Hours (Morning or Afternoon)',
       images: [
         'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1534177616072-ef7dc120449d?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=800&q=80',
       ],
       categoryId: 'cat_safari',
       categoryName: 'Safari & Tour Guides',
       isAvailable: true,
       featured: true,
       rating: 5.0,
-      reviewCount: 46,
-      provider: 'Zawadi Certified Naturalist Drivers',
-      location: 'Nairobi City & Park Gates',
+      reviewCount: 36,
+      provider: 'Zawadi Certified Safari Guides',
+      location: 'Nairobi National Park, Main Gate',
       createdAt: '2026-01-18T08:00:00Z',
     },
     {
       id: 'serv_002',
-      slug: 'solar-pv-home-commercial-audit',
+      slug: 'solar-pv-energy-audit-assessment',
       name: {
         en: 'Solar PV Clean Energy Assessment & Installation Audit',
-        sw: 'Tathmini na Ukaguzi wa Mifumo ya Umeme wa Jua kwa Majumba na Biashara',
-        lg: 'Okukebera n’Okutegeka Amasannyalaze g’Enjuba mu Mayumba',
-        zh: '工商业与民用太阳能光伏系统评估与工程审计',
-        es: 'Auditoría Energética e Instalación Solar Fotovoltaica',
-        pt: 'Auditoria e Avaliação de Sistemas Solares Fotovoltaicos',
+        sw: 'Ukaguzi wa Nishati ya Jua ya Umeme na Ushauri wa Kufunga',
+        lg: 'Okukebera n’Okutegeka Amasannyalaze g’Enjuba aga Solar',
+        zh: '家庭与工商业分布式太阳能光伏发电系统勘测及方案设计',
+        es: 'Auditoría Energética Solar y Asesoría de Instalación Fotovoltaica',
+        pt: 'Auditoria de Energia Solar e Consultoria de Instalação Fotovoltaica',
       },
       description: {
-        en: 'On-site technical assessment by EPRA-certified engineers in Kenya to calculate your solar capacity, battery storage sizing, and ROI for residential or business premises.',
-        sw: 'Ukaguzi wa kitaalamu kutoka kwa wahandisi walioidhinishwa na EPRA kupima uwezo wa umeme wa jua, betri, na jinsi utakavyookoa gharama za umeme.',
-        lg: 'Abakugu abalina satifikeeti bajja kukebera ennyumba yo basobole okumanya amasannyalaze g’enjuba agasinga okukuganyula.',
-        zh: '由肯尼亚能源监管局（EPRA）认证工程师亲赴现场勘探，定制光伏并网/离网装机容量、储能锂电配置及投资回本周期测算。',
-        es: 'Evaluación técnica in situ por ingenieros certificados para dimensionar su instalación solar fotovoltaica, baterías y amortización de inversión.',
-        pt: 'Avaliação técnica no local por engenheiros certificados para dimensionar capacidade solar, baterias e retorno financeiro.',
+        en: 'Comprehensive site assessment by EPRA-licensed solar engineers. Includes structural roof load analysis, solar irradiance modeling, battery sizing, and ROI payback forecast.',
+        sw: 'Ukaguzi kamili wa eneo na wahandisi walioidhinishwa na EPRA. Inajumuisha tathmini ya paa, uwezo wa betri na makadirio ya kuokoa gharama za umeme.',
+        lg: 'Okupima n’okutegeka amakubo ag’enjawulo ag’amasannyalaze n’abakugu abalina layisinsi.',
+        zh: '由肯尼亚能源监管局 (EPRA) 持牌高级电气工程师进行全方位屋顶荷载测算、光照建模、储能电池选型与投资回报测算。',
+        es: 'Evaluación técnica completa por ingenieros solares certificados. Incluye análisis de carga de techo, dimensionamiento de baterías y cálculo de retorno de inversión.',
+        pt: 'Avaliação técnica completa por engenheiros solares certificados por EPRA, com análise de viabilidade, dimensionamento e retorno financeiro.',
       },
       price: 6500,
-      duration: '1 Full Day Technical Survey + Detailed Report',
+      duration: 'Site Visit + Comprehensive Report (48h)',
       images: [
         'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=800&q=80',
       ],
@@ -672,33 +462,33 @@ export function initSeedData() {
       categoryName: 'Business & Professional Services',
       isAvailable: true,
       featured: true,
-      rating: 4.8,
-      reviewCount: 19,
-      provider: 'GreenGrid Kenya EPRA Certified Engineers',
-      location: 'Nairobi, Kiambu, Machakos & Nakuru',
+      rating: 4.9,
+      reviewCount: 18,
+      provider: 'Zawadi Green Energy Engineering Team',
+      location: 'Nairobi Metropolitan & 47 Counties',
       createdAt: '2026-01-24T09:00:00Z',
     },
     {
       id: 'serv_003',
-      slug: 'swahili-east-africa-translation-localization',
+      slug: 'swahili-localization-legal-translation',
       name: {
         en: 'Official East African Swahili Translation & Legal Localization',
-        sw: 'Ukalimani Rasmi wa Kiswahili cha Afrika Mashariki na Sheria',
-        lg: "Okuvvuunula Oluswayiri olw'Obukugu n'Amateeka",
-        zh: '东非斯瓦希里语官方商务翻译与涉外法律本地化',
-        es: 'Traducción Jurídica y Localización a Suajili de África Oriental',
-        pt: 'Tradução Jurídica e Localização em Suaíli da África Oriental',
+        sw: 'Tafsiri Rasmi ya Kiswahili na Ujanibishaji wa Kisheria',
+        lg: 'Olukalala lw’Okutafsiri Oluswayiri n’Amateeka g’omu Buvanjuba bwa Afirika',
+        zh: '东非官方斯瓦希里语专业商务文件与法律合同翻译本土化',
+        es: 'Traducción Jurada y Localización al Suajili de África Oriental',
+        pt: 'Tradução Oficial e Localização em Suaíli da África Oriental',
       },
       description: {
-        en: 'Certified translation of business contracts, regulatory submissions, marketing campaigns, and technical manuals into authentic standard Swahili and Luganda.',
-        sw: 'Ufasiri wenye vyeti wa mikataba ya kibiashara, hati za kisheria, matangazo ya bidhaa, na miongozo ya kiufundi kwa Kiswahili sanifu na Luganda.',
-        lg: 'Okuvvuunula ebiwandiiko by’obusuubuzi, eby’amateeka, n’eby’akatale mu lulimi Oluswayiri olutukuvu n’Oluganda.',
-        zh: '提供东非肯尼亚、坦桑尼亚、乌干达标准斯瓦希里语及卢干达语的商务合同、政府合规文件、产品说明书及跨境营销文案精准本地化。',
-        es: 'Traducción certificada de contratos mercantiles, normativas y campañas comerciales a suajili estándar y luganda por traductores jurados.',
-        pt: 'Tradução juramentada de contratos, documentos regulatórios e campanhas para o suaíli padrão da África Oriental e luganda.',
+        en: 'Certified translation of legal contracts, corporate policies, e-commerce stores, and software UI by sworn Swahili linguists fluent in regional dialects (Kenya, Tanzania, Uganda).',
+        sw: 'Tafsiri iliyoidhinishwa ya mikataba ya kisheria, mifumo ya kiteknolojia na tovuti na wataalamu waliobobea katika lahaja za kanda ya Afrika Mashariki.',
+        lg: 'Okutafsiri ebiwandiiko eby’amateeka n’ebyobusuubuzi n’abakugu mu lulimi Oluswayiri.',
+        zh: '由东非权威语言协会认证的资深斯瓦希里语母语译员提供法律合同、公司合规文件、跨境电商平台与软件界面的严谨本土化翻译。',
+        es: 'Traducción certificada de contratos legales, sitios web y documentación comercial por lingüistas jurados.',
+        pt: 'Tradução juramentada de contratos, documentação comercial e aplicativos por especialistas nativos em língua suaíli.',
       },
       price: 4500,
-      duration: 'Up to 2,500 Words (48h Turnaround)',
+      duration: 'Per Document Batch (Up to 2,500 words)',
       images: [
         'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80',
       ],
@@ -707,270 +497,660 @@ export function initSeedData() {
       isAvailable: true,
       featured: false,
       rating: 5.0,
-      reviewCount: 34,
-      provider: 'Zawadi East Africa Language Bureau',
-      location: 'All East Africa & Digital Delivery',
-      createdAt: '2026-01-30T10:00:00Z',
-    },
-    {
-      id: 'serv_004',
-      slug: 'nairobi-airport-transfer-vip-chauffeur',
-      name: {
-        en: 'Nairobi JKIA Airport Private VIP Chauffeur & Luggage Transfer',
-        sw: 'Usafiri Binafsi wa VIP wa Uwanja wa Ndege wa JKIA Nairobi',
-        lg: "Entambula ey'Ekitiibwa ey'Abagenyi ku Kisaawe ky'e JKIA",
-        zh: '内罗毕 JKIA 国际机场贵宾私享专车接送机与行李礼宾服务',
-        es: 'Traslado VIP Privado al Aeropuerto Internacional JKIA Nairobi',
-        pt: 'Transfer VIP Privado para o Aeroporto Internacional JKIA Nairóbi',
-      },
-      description: {
-        en: 'Executive flight-tracked meet-and-greet at Jomo Kenyatta International Airport with complimentary onboard Wi-Fi, bottled water, and air-conditioned luxury SUV.',
-        sw: 'Kupokelewa kwa heshima kwenye Uwanja wa Ndege wa Kimataifa wa Jomo Kenyatta kukiwa na Wi-Fi, maji ya kunywa, na gari la kifahari lenye kiyoyozi.',
-        lg: 'Okukusisinkana ku kisaawe kya JKIA mu kitiibwa nga olina Wi-Fi n’amazzi mu mmotoka ey’omulembe.',
-        zh: '内罗毕乔莫·肯雅塔国际机场（JKIA）航班动态实时跟踪接送机。配备高端豪华 SUV、车内免费 Wi-Fi、瓶装高山矿泉水及持证专业双语司机。',
-        es: 'Servicio privado con seguimiento de vuelo en JKIA, bienvenida personalizada, Wi-Fi a bordo y vehículo SUV de lujo climatizado.',
-        pt: 'Recepção personalizada com monitoramento de voo no aeroporto JKIA em SUV executivo com Wi-Fi e ar-condicionado.',
-      },
-      price: 4000,
-      duration: 'One-Way Transfer (24/7 Availability)',
-      images: [
-        'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=800&q=80',
-      ],
-      categoryId: 'cat_safari',
-      categoryName: 'Safari & Tour Guides',
-      isAvailable: true,
-      featured: false,
-      rating: 4.9,
-      reviewCount: 52,
-      provider: 'Zawadi Mobility & Fleet Services',
-      location: 'JKIA Airport to Greater Nairobi Hotels',
-      createdAt: '2026-02-04T14:00:00Z',
-    },
-    {
-      id: 'serv_005',
-      slug: 'ecommerce-daraja-mpesa-onboarding-consult',
-      name: {
-        en: 'Kenyan SME E-Commerce & Safaricom Daraja M-Pesa Setup',
-        sw: 'Ushauri na Uunganishaji wa Tovuti ya Biashara na Safaricom M-Pesa',
-        lg: "Entegeka y'Akatale k'Omukutu n'Okusasula kwa M-Pesa",
-        zh: '肯尼亚中小企业独立站搭建与 Safaricom Daraja M-Pesa 官方接入部署',
-        es: 'Integración E-Commerce y Pasarela Safaricom Daraja M-Pesa para PYMEs',
-        pt: 'Integração de E-Commerce e Safaricom Daraja M-Pesa para PMEs',
-      },
-      description: {
-        en: 'Complete architecture setup for Kenyan merchants: Daraja API sandbox to production transition, webhooks, STK push error handling, and accounting reconciliation.',
-        sw: 'Ushauri kamili kwa wafanyabiashara wa Kenya: kuunganisha M-Pesa Daraja STK Push, kushughulikia makosa ya malipo, na mfumo wa hesabu.',
-        lg: 'Okukuyamba okuteeka M-Pesa ku mukutu gwo n’okusasula okw’amangu n’obukuumi.',
-        zh: '资深全栈工程师一对一协助肯尼亚本土商家：完成 Daraja 开发者账号注册、沙箱调试至生产上线、STK Push 异常熔断与自动对账系统闭环。',
-        es: 'Configuración técnica completa para comercios en Kenia: transición de Daraja Sandbox a producción, webhooks y conciliación contable.',
-        pt: 'Configuração técnica completa para lojistas no Quênia: transição de Sandbox para produção, webhooks e reconciliação financeira.',
-      },
-      price: 15000,
-      duration: '3 Days Implementation & Testing Package',
-      images: [
-        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
-      ],
-      categoryId: 'cat_business',
-      categoryName: 'Business & Professional Services',
-      isAvailable: true,
-      featured: true,
-      rating: 5.0,
-      reviewCount: 28,
-      provider: 'Zawadi Digital Systems Engineers',
-      location: 'Virtual / Nairobi Office Consultation',
-      createdAt: '2026-02-10T16:00:00Z',
+      reviewCount: 29,
+      provider: 'Zawadi Linguistic Translation Bureau',
+      location: 'Nairobi & Digital Delivery',
+      createdAt: '2026-01-29T10:00:00Z',
     },
   ];
 
-  const initialOrders: Order[] = [
-    {
-      id: 'ord_sample_001',
-      orderNumber: 'ZWD-2026-1042',
-      userId: 'usr_cust_002',
-      customerName: 'David Kiprono',
-      customerEmail: 'customer@zawadi.co.ke',
-      customerPhone: '254798765432',
-      deliveryAddress: 'Westlands Commercial Park, Block B, Suite 401',
-      county: 'Nairobi',
-      town: 'Westlands',
-      notes: 'Please call before delivery. Deliver to reception desk.',
-      subtotal: 5650,
-      deliveryFee: 250,
-      discount: 0,
-      totalAmount: 5900,
-      orderStatus: 'delivered',
-      paymentStatus: 'completed',
-      paymentMethod: 'mpesa',
-      mpesaReceiptNumber: 'NL45K8Z99Q',
-      checkoutRequestId: 'ws_CO_240220261145321042',
-      items: [
-        {
-          id: 'item_01',
-          orderId: 'ord_sample_001',
-          itemId: 'prod_001',
-          itemType: 'product',
-          name: 'Kenyan AA Single-Origin Coffee Beans (500g)',
-          quantity: 2,
-          unitPrice: 1850,
-          totalPrice: 3700,
-          image: 'https://images.unsplash.com/photo-1587734195503-904fca47e0e9?auto=format&fit=crop&w=800&q=80',
-        },
-        {
-          id: 'item_02',
-          orderId: 'ord_sample_001',
-          itemId: 'prod_009',
-          itemType: 'product',
-          name: 'Hand-carved Wild Olive Wood Salad Server Pair',
-          quantity: 1,
-          unitPrice: 1950,
-          totalPrice: 1950,
-          image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80',
-        },
-      ],
-      createdAt: '2026-02-24T11:45:00Z',
-      updatedAt: '2026-02-25T14:30:00Z',
-    },
-    {
-      id: 'ord_sample_002',
-      orderNumber: 'ZWD-2026-1088',
-      userId: 'usr_cust_002',
-      customerName: 'Sarah Mwangi',
-      customerEmail: 'sarah.mwangi@example.com',
-      customerPhone: '254722113355',
-      deliveryAddress: 'Lavington Green, James Gichuru Road',
-      county: 'Nairobi',
-      town: 'Lavington',
-      notes: 'Morning safari timing preferred.',
-      subtotal: 13300,
-      deliveryFee: 0,
-      discount: 500,
-      totalAmount: 12800,
-      orderStatus: 'processing',
-      paymentStatus: 'completed',
-      paymentMethod: 'mpesa',
-      mpesaReceiptNumber: 'NL89M2P11V',
-      checkoutRequestId: 'ws_CO_260220260912441088',
-      items: [
-        {
-          id: 'item_03',
-          orderId: 'ord_sample_002',
-          itemId: 'serv_001',
-          itemType: 'service',
-          name: 'Nairobi National Park Half-Day Wildlife Safari & Guide',
-          quantity: 1,
-          unitPrice: 9500,
-          totalPrice: 9500,
-          image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=800&q=80',
-        },
-        {
-          id: 'item_04',
-          orderId: 'ord_sample_002',
-          itemId: 'prod_002',
-          itemType: 'product',
-          name: 'Authentic Maasai Handwoven Kiondo Tote Bag',
-          quantity: 1,
-          unitPrice: 3800,
-          totalPrice: 3800,
-          image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80',
-        },
-      ],
-      createdAt: '2026-02-26T09:12:00Z',
-      updatedAt: '2026-02-26T09:20:00Z',
-    },
-  ];
-
-  const initialPayments: PaymentTransaction[] = [
-    {
-      id: 'pay_001',
-      orderId: 'ord_sample_001',
-      orderNumber: 'ZWD-2026-1042',
-      amount: 5900,
-      phoneNumber: '254798765432',
-      merchantRequestId: 'MR-9041-89312',
-      checkoutRequestId: 'ws_CO_240220261145321042',
-      mpesaReceiptNumber: 'NL45K8Z99Q',
-      resultCode: 0,
-      resultDesc: 'The service request is processed successfully.',
-      status: 'completed',
-      environment: 'sandbox',
-      createdAt: '2026-02-24T11:45:32Z',
-      completedAt: '2026-02-24T11:46:12Z',
-    },
-    {
-      id: 'pay_002',
-      orderId: 'ord_sample_002',
-      orderNumber: 'ZWD-2026-1088',
-      amount: 12800,
-      phoneNumber: '254722113355',
-      merchantRequestId: 'MR-9042-47201',
-      checkoutRequestId: 'ws_CO_260220260912441088',
-      mpesaReceiptNumber: 'NL89M2P11V',
-      resultCode: 0,
-      resultDesc: 'The service request is processed successfully.',
-      status: 'completed',
-      environment: 'sandbox',
-      createdAt: '2026-02-26T09:12:44Z',
-      completedAt: '2026-02-26T09:13:18Z',
-    },
-  ];
-
-  memoryDb = {
-    users: initialUsers,
-    categories: initialCategories,
-    products: initialProducts,
-    services: initialServices,
-    orders: initialOrders,
-    payments: initialPayments,
-    wishlists: {
-      usr_cust_002: ['prod_001', 'prod_003'],
-    },
-    carts: {},
-  };
+  return { initialCategories, initialProducts, initialServices };
 }
 
-// Ensure database is initialized on load
-loadDb();
+// Seed catalog into PostgreSQL
+async function seedCatalogPostgres(client: pg.PoolClient | pg.Pool) {
+  const { initialCategories, initialProducts, initialServices } = getCatalogSeedData();
 
-// Database Access Methods
-export const db = {
+  // 1. Categories & Translations
+  for (const c of initialCategories) {
+    await client.query(
+      `INSERT INTO categories (id, slug, icon, type, created_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (id) DO NOTHING`,
+      [c.id, c.slug, c.icon, c.type]
+    );
+
+    for (const [lang, name] of Object.entries(c.name)) {
+      await client.query(
+        `INSERT INTO category_translations (id, category_id, language_code, name, description)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (category_id, language_code) DO NOTHING`,
+        [`${c.id}_${lang}`, c.id, lang, name, '']
+      );
+    }
+  }
+
+  // 2. Products & Translations
+  for (const p of initialProducts) {
+    await client.query(
+      `INSERT INTO products (id, sku, slug, category_id, price_kes, discount_price_kes, stock_quantity, is_available, featured, rating, review_count, origin, weight, images, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $15)
+       ON CONFLICT (id) DO NOTHING`,
+      [
+        p.id,
+        p.sku,
+        p.slug,
+        p.categoryId,
+        p.price,
+        p.discountPrice || null,
+        p.stockQuantity,
+        p.isAvailable,
+        p.featured,
+        p.rating,
+        p.reviewCount,
+        p.origin,
+        p.weight || null,
+        JSON.stringify(p.images),
+        p.createdAt,
+      ]
+    );
+
+    for (const lang of ['en', 'sw', 'lg', 'zh', 'es', 'pt'] as SupportedLanguage[]) {
+      const name = p.name[lang] || p.name.en;
+      const desc = p.description[lang] || p.description.en;
+      await client.query(
+        `INSERT INTO product_translations (id, product_id, language_code, name, description)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (product_id, language_code) DO NOTHING`,
+        [`${p.id}_${lang}`, p.id, lang, name, desc]
+      );
+    }
+  }
+
+  // 3. Services & Translations
+  for (const s of initialServices) {
+    await client.query(
+      `INSERT INTO services (id, slug, category_id, price_kes, duration, provider, location, is_available, featured, rating, review_count, images, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $13)
+       ON CONFLICT (id) DO NOTHING`,
+      [
+        s.id,
+        s.slug,
+        s.categoryId,
+        s.price,
+        s.duration,
+        s.provider,
+        s.location,
+        s.isAvailable,
+        s.featured,
+        s.rating,
+        s.reviewCount,
+        JSON.stringify(s.images),
+        s.createdAt,
+      ]
+    );
+
+    for (const lang of ['en', 'sw', 'lg', 'zh', 'es', 'pt'] as SupportedLanguage[]) {
+      const name = s.name[lang] || s.name.en;
+      const desc = s.description[lang] || s.description.en;
+      await client.query(
+        `INSERT INTO service_translations (id, service_id, language_code, name, description)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (service_id, language_code) DO NOTHING`,
+        [`${s.id}_${lang}`, s.id, lang, name, desc]
+      );
+    }
+  }
+}
+
+// Ensure an admin user exists from ADMIN_EMAIL & ADMIN_PASSWORD environment variables
+async function ensureAdminUser(client: pg.PoolClient | pg.Pool) {
+  const adminCheck = await client.query("SELECT count(*)::int AS count FROM users WHERE role = 'admin'");
+  const adminCount = adminCheck.rows[0]?.count || 0;
+
+  if (adminCount === 0) {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (adminEmail && adminPassword) {
+      const salt = bcrypt.genSaltSync(10);
+      const passwordHash = bcrypt.hashSync(adminPassword, salt);
+      const adminId = `usr_admin_${Date.now()}`;
+
+      await client.query(
+        `INSERT INTO users (id, full_name, email, phone, password_hash, role, preferred_language, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, 'admin', 'en', NOW(), NOW())
+         ON CONFLICT (email) DO UPDATE SET role = 'admin', password_hash = EXCLUDED.password_hash`,
+        [adminId, 'Zawadi Administrator', adminEmail.trim().toLowerCase(), '254712345678', passwordHash]
+      );
+      console.log(`[PostgreSQL] Created initial administrator account for: ${adminEmail.trim().toLowerCase()}`);
+    } else {
+      console.log('[PostgreSQL] No administrator exists yet. Set ADMIN_EMAIL and ADMIN_PASSWORD to auto-provision.');
+    }
+  }
+}
+
+// Load all records from PostgreSQL into memory for fast fallback
+async function loadFromPostgres(client: pg.PoolClient | pg.Pool) {
   // Users
-  getUserByEmail: (email: string) => {
-    return memoryDb.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  const userRes = await client.query('SELECT * FROM users');
+  memoryDb.users = userRes.rows.map((r) => ({
+    id: r.id,
+    fullName: r.full_name,
+    email: r.email,
+    phone: r.phone,
+    role: r.role,
+    preferredLanguage: r.preferred_language,
+    deliveryAddress: r.delivery_address || undefined,
+    county: r.county || undefined,
+    town: r.town || undefined,
+    createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+    passwordHash: r.password_hash,
+  }));
+
+  // Categories + Translations
+  const catRes = await client.query(`
+    SELECT c.*, ct.language_code, ct.name AS trans_name
+    FROM categories c
+    LEFT JOIN category_translations ct ON c.id = ct.category_id
+  `);
+  const catMap = new Map<string, Category>();
+  for (const row of catRes.rows) {
+    if (!catMap.has(row.id)) {
+      catMap.set(row.id, {
+        id: row.id,
+        slug: row.slug,
+        icon: row.icon,
+        type: row.type,
+        name: {} as any,
+      });
+    }
+    const cat = catMap.get(row.id)!;
+    if (row.language_code && row.trans_name) {
+      cat.name[row.language_code as SupportedLanguage] = row.trans_name;
+    }
+  }
+  memoryDb.categories = Array.from(catMap.values());
+
+  // Products + Translations
+  const prodRes = await client.query(`
+    SELECT p.*, pt.language_code, pt.name AS trans_name, pt.description AS trans_desc
+    FROM products p
+    LEFT JOIN product_translations pt ON p.id = pt.product_id
+  `);
+  const prodMap = new Map<string, Product>();
+  for (const row of prodRes.rows) {
+    if (!prodMap.has(row.id)) {
+      prodMap.set(row.id, {
+        id: row.id,
+        sku: row.sku,
+        slug: row.slug,
+        categoryId: row.category_id,
+        price: Number(row.price_kes),
+        discountPrice: row.discount_price_kes ? Number(row.discount_price_kes) : undefined,
+        images: Array.isArray(row.images) ? row.images : (typeof row.images === 'string' ? JSON.parse(row.images) : []),
+        stockQuantity: row.stock_quantity,
+        isAvailable: row.is_available,
+        featured: row.featured,
+        rating: Number(row.rating || 5.0),
+        reviewCount: row.review_count,
+        origin: row.origin,
+        weight: row.weight || undefined,
+        createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+        name: {} as any,
+        description: {} as any,
+      });
+    }
+    const prod = prodMap.get(row.id)!;
+    if (row.language_code) {
+      if (row.trans_name) prod.name[row.language_code as SupportedLanguage] = row.trans_name;
+      if (row.trans_desc) prod.description[row.language_code as SupportedLanguage] = row.trans_desc;
+    }
+  }
+  memoryDb.products = Array.from(prodMap.values());
+
+  // Services + Translations
+  const servRes = await client.query(`
+    SELECT s.*, st.language_code, st.name AS trans_name, st.description AS trans_desc
+    FROM services s
+    LEFT JOIN service_translations st ON s.id = st.service_id
+  `);
+  const servMap = new Map<string, Service>();
+  for (const row of servRes.rows) {
+    if (!servMap.has(row.id)) {
+      servMap.set(row.id, {
+        id: row.id,
+        slug: row.slug,
+        categoryId: row.category_id,
+        price: Number(row.price_kes),
+        duration: row.duration,
+        provider: row.provider,
+        location: row.location,
+        isAvailable: row.is_available,
+        featured: row.featured,
+        rating: Number(row.rating || 5.0),
+        reviewCount: row.review_count,
+        images: Array.isArray(row.images) ? row.images : (typeof row.images === 'string' ? JSON.parse(row.images) : []),
+        createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+        name: {} as any,
+        description: {} as any,
+      });
+    }
+    const serv = servMap.get(row.id)!;
+    if (row.language_code) {
+      if (row.trans_name) serv.name[row.language_code as SupportedLanguage] = row.trans_name;
+      if (row.trans_desc) serv.description[row.language_code as SupportedLanguage] = row.trans_desc;
+    }
+  }
+  memoryDb.services = Array.from(servMap.values());
+
+  // Orders + Items
+  const orderRes = await client.query(`SELECT * FROM orders ORDER BY created_at DESC`);
+  const itemRes = await client.query(`SELECT * FROM order_items`);
+  const itemsByOrder = new Map<string, any[]>();
+  for (const it of itemRes.rows) {
+    if (!itemsByOrder.has(it.order_id)) itemsByOrder.set(it.order_id, []);
+    itemsByOrder.get(it.order_id)!.push({
+      id: it.id,
+      orderId: it.order_id,
+      itemType: it.item_type,
+      itemId: it.item_id,
+      name: it.name,
+      quantity: it.quantity,
+      unitPrice: Number(it.unit_price),
+      totalPrice: Number(it.total_price),
+      image: it.image,
+    });
+  }
+
+  memoryDb.orders = orderRes.rows.map((r) => ({
+    id: r.id,
+    orderNumber: r.order_number,
+    userId: r.user_id || undefined,
+    customerName: r.customer_name,
+    customerEmail: r.customer_email,
+    customerPhone: r.customer_phone,
+    deliveryAddress: r.delivery_address,
+    county: r.county,
+    town: r.town,
+    notes: r.order_notes || undefined,
+    subtotal: Number(r.subtotal),
+    deliveryFee: Number(r.delivery_fee),
+    discount: Number(r.discount),
+    totalAmount: Number(r.total_amount),
+    orderStatus: r.order_status,
+    paymentStatus: r.payment_status,
+    paymentMethod: r.payment_method,
+    mpesaReceiptNumber: r.mpesa_receipt_number || undefined,
+    checkoutRequestId: r.checkout_request_id || undefined,
+    createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+    updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+    items: itemsByOrder.get(r.id) || [],
+  }));
+
+  // Payments
+  const payRes = await client.query(`SELECT * FROM payments ORDER BY created_at DESC`);
+  memoryDb.payments = payRes.rows.map((r) => ({
+    id: r.id,
+    orderId: r.order_id,
+    orderNumber: r.order_number,
+    amount: Number(r.amount),
+    phoneNumber: r.phone_number,
+    merchantRequestId: r.merchant_request_id || undefined,
+    checkoutRequestId: r.checkout_request_id,
+    mpesaReceiptNumber: r.mpesa_receipt_number || undefined,
+    resultCode: r.result_code !== null ? r.result_code : undefined,
+    resultDesc: r.result_desc || undefined,
+    status: r.status,
+    environment: r.environment,
+    createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+    completedAt: r.completed_at ? new Date(r.completed_at).toISOString() : undefined,
+  }));
+}
+
+// In-Memory Seed Fallback (when running in dev mode without DATABASE_URL)
+export function initSeedData() {
+  const { initialCategories, initialProducts, initialServices } = getCatalogSeedData();
+  memoryDb.categories = [...initialCategories];
+  memoryDb.products = [...initialProducts];
+  memoryDb.services = [...initialServices];
+  memoryDb.orders = [];
+  memoryDb.payments = [];
+  memoryDb.wishlists = {};
+  memoryDb.carts = {};
+
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (adminEmail && adminPassword && memoryDb.users.length === 0) {
+    const salt = bcrypt.genSaltSync(10);
+    memoryDb.users.push({
+      id: 'usr_admin_dev',
+      fullName: 'Zawadi Administrator',
+      email: adminEmail.trim().toLowerCase(),
+      phone: '254712345678',
+      role: 'admin',
+      preferredLanguage: 'en',
+      createdAt: new Date().toISOString(),
+      passwordHash: bcrypt.hashSync(adminPassword, salt),
+    });
+  }
+}
+
+// ==============================================================================
+// INITIALIZE DATABASE ON STARTUP (Executes schema.sql and seeds if products empty)
+// ==============================================================================
+export async function initDatabase(): Promise<void> {
+  const pool = getPgPool();
+
+  if (!pool) {
+    console.warn(
+      '[PostgreSQL] DATABASE_URL is not set or database pool could not be created. Starting with in-memory catalog.'
+    );
+    initSeedData();
+    isInitialized = true;
+    return;
+  }
+
+  try {
+    console.log('[PostgreSQL] Connecting to PostgreSQL using DATABASE_URL...');
+    const client = await pool.connect();
+    try {
+      // 1. Locate and read schema.sql from candidate locations
+      const schemaCandidates = [
+        path.resolve(process.cwd(), 'src/db/schema.sql'),
+        path.resolve(process.cwd(), 'schema.sql'),
+        path.resolve(__dirname, 'schema.sql'),
+        path.resolve(__dirname, '../schema.sql'),
+        path.resolve(__dirname, '../../schema.sql'),
+      ];
+      let schemaSql = '';
+      for (const p of schemaCandidates) {
+        if (fs.existsSync(p)) {
+          schemaSql = fs.readFileSync(p, 'utf-8');
+          console.log(`[PostgreSQL] Found schema file: ${p}`);
+          break;
+        }
+      }
+
+      // 2. Execute schema.sql to create all tables on startup if they don't exist
+      if (schemaSql) {
+        console.log('[PostgreSQL] Executing schema.sql to verify/create relational tables...');
+        await client.query(schemaSql);
+        console.log('[PostgreSQL] Schema applied successfully! All tables ready.');
+      }
+
+      // 3. Seed sample categories and products ONLY if the products table is empty
+      const prodCheck = await client.query('SELECT count(*)::int AS count FROM products');
+      const prodCount = prodCheck.rows[0]?.count || 0;
+
+      if (prodCount === 0) {
+        console.log('[PostgreSQL] Products table is empty. Seeding initial categories and products into PostgreSQL...');
+        await seedCatalogPostgres(client);
+        console.log('[PostgreSQL] Sample categories and products successfully seeded.');
+      } else {
+        console.log(`[PostgreSQL] Catalog already populated (${prodCount} products found).`);
+      }
+
+      // 4. Ensure admin user exists from ADMIN_EMAIL / ADMIN_PASSWORD
+      await ensureAdminUser(client);
+
+      // 5. Synchronize memory cache from PostgreSQL
+      await loadFromPostgres(client);
+      console.log('[PostgreSQL] Synced active application data from PostgreSQL.');
+      isInitialized = true;
+    } finally {
+      client.release();
+    }
+  } catch (err: any) {
+    console.error('[PostgreSQL] Database startup initialization failed:', err.message);
+    console.warn('[PostgreSQL] Falling back to in-memory store.');
+    initSeedData();
+    isInitialized = true;
+  }
+}
+
+// Auto-initialize when file is imported
+initDatabase().catch((e) => console.error('[Database] Async init error:', e));
+
+// ==============================================================================
+// ASYNCHRONOUS DATABASE ACCESS LAYER (Direct PostgreSQL Queries)
+// ==============================================================================
+export const db = {
+  // --------------------------------------------------------------------------
+  // USERS
+  // --------------------------------------------------------------------------
+  getUserByEmail: async (email: string): Promise<(User & { passwordHash: string }) | null> => {
+    const cleanEmail = email.trim().toLowerCase();
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = await pool.query('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [cleanEmail]);
+        if (res.rows.length === 0) return null;
+        const r = res.rows[0];
+        return {
+          id: r.id,
+          fullName: r.full_name,
+          email: r.email,
+          phone: r.phone,
+          role: r.role,
+          preferredLanguage: r.preferred_language,
+          deliveryAddress: r.delivery_address || undefined,
+          county: r.county || undefined,
+          town: r.town || undefined,
+          createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+          passwordHash: r.password_hash,
+        };
+      } catch (err) {
+        console.error('[PostgreSQL] getUserByEmail error:', err);
+      }
+    }
+    return memoryDb.users.find((u) => u.email.toLowerCase() === cleanEmail) || null;
   },
-  getUserById: (id: string) => {
-    return memoryDb.users.find((u) => u.id === id);
+
+  getUserById: async (id: string): Promise<User | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (res.rows.length === 0) return null;
+        const r = res.rows[0];
+        return {
+          id: r.id,
+          fullName: r.full_name,
+          email: r.email,
+          phone: r.phone,
+          role: r.role,
+          preferredLanguage: r.preferred_language,
+          deliveryAddress: r.delivery_address || undefined,
+          county: r.county || undefined,
+          town: r.town || undefined,
+          createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+        };
+      } catch (err) {
+        console.error('[PostgreSQL] getUserById error:', err);
+      }
+    }
+    const memUser = memoryDb.users.find((u) => u.id === id);
+    if (!memUser) return null;
+    const { passwordHash: _, ...safeUser } = memUser;
+    return safeUser;
   },
-  createUser: (userData: User & { passwordHash: string }) => {
-    memoryDb.users.push(userData);
-    persistDb();
-    return userData;
+
+  createUser: async (userData: User & { passwordHash: string }): Promise<User> => {
+    const cleanEmail = userData.email.trim().toLowerCase();
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `INSERT INTO users (id, full_name, email, phone, password_hash, role, preferred_language, delivery_address, county, town, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+           ON CONFLICT (id) DO UPDATE SET
+             full_name = EXCLUDED.full_name,
+             phone = EXCLUDED.phone,
+             password_hash = EXCLUDED.password_hash,
+             preferred_language = EXCLUDED.preferred_language,
+             delivery_address = EXCLUDED.delivery_address,
+             county = EXCLUDED.county,
+             town = EXCLUDED.town,
+             updated_at = NOW()`,
+          [
+            userData.id,
+            userData.fullName,
+            cleanEmail,
+            userData.phone,
+            userData.passwordHash,
+            userData.role,
+            userData.preferredLanguage,
+            userData.deliveryAddress || null,
+            userData.county || null,
+            userData.town || null,
+            userData.createdAt,
+            new Date().toISOString(),
+          ]
+        );
+      } catch (err) {
+        console.error('[PostgreSQL] createUser error:', err);
+      }
+    }
+
+    const idx = memoryDb.users.findIndex((u) => u.id === userData.id);
+    if (idx !== -1) {
+      memoryDb.users[idx] = { ...userData, email: cleanEmail };
+    } else {
+      memoryDb.users.push({ ...userData, email: cleanEmail });
+    }
+
+    const { passwordHash: _, ...safeUser } = userData;
+    return { ...safeUser, email: cleanEmail };
   },
-  updateUserLanguage: (userId: string, lang: SupportedLanguage) => {
+
+  updateUserLanguage: async (userId: string, lang: SupportedLanguage): Promise<User | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `UPDATE users SET preferred_language = $1, updated_at = NOW() WHERE id = $2`,
+          [lang, userId]
+        );
+      } catch (err) {
+        console.error('[PostgreSQL] updateUserLanguage error:', err);
+      }
+    }
+
     const user = memoryDb.users.find((u) => u.id === userId);
     if (user) {
       user.preferredLanguage = lang;
-      persistDb();
-      return user;
+      const { passwordHash: _, ...safeUser } = user;
+      return safeUser;
     }
     return null;
   },
-  updateUserProfile: (userId: string, updates: Partial<User>) => {
+
+  updateUserProfile: async (userId: string, updates: Partial<User>): Promise<User | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `UPDATE users SET
+             full_name = COALESCE($1, full_name),
+             phone = COALESCE($2, phone),
+             delivery_address = COALESCE($3, delivery_address),
+             county = COALESCE($4, county),
+             town = COALESCE($5, town),
+             updated_at = NOW()
+           WHERE id = $6`,
+          [
+            updates.fullName || null,
+            updates.phone || null,
+            updates.deliveryAddress || null,
+            updates.county || null,
+            updates.town || null,
+            userId,
+          ]
+        );
+      } catch (err) {
+        console.error('[PostgreSQL] updateUserProfile error:', err);
+      }
+    }
+
     const user = memoryDb.users.find((u) => u.id === userId);
     if (user) {
       Object.assign(user, updates);
-      persistDb();
-      return user;
+      const { passwordHash: _, ...safeUser } = user;
+      return safeUser;
     }
     return null;
   },
-  getAllUsers: () => memoryDb.users,
 
-  // Categories
-  getCategories: () => memoryDb.categories,
-  getCategoryById: (id: string) => memoryDb.categories.find((c) => c.id === id),
+  getAllUsers: async (): Promise<User[]> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = await pool.query('SELECT id, full_name, email, phone, role, preferred_language, delivery_address, county, town, created_at FROM users ORDER BY created_at DESC');
+        return res.rows.map((r) => ({
+          id: r.id,
+          fullName: r.full_name,
+          email: r.email,
+          phone: r.phone,
+          role: r.role,
+          preferredLanguage: r.preferred_language,
+          deliveryAddress: r.delivery_address || undefined,
+          county: r.county || undefined,
+          town: r.town || undefined,
+          createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+        }));
+      } catch (err) {
+        console.error('[PostgreSQL] getAllUsers error:', err);
+      }
+    }
+    return memoryDb.users.map(({ passwordHash: _, ...safeUser }) => safeUser);
+  },
 
-  // Products
-  getProducts: (filter?: {
+  // --------------------------------------------------------------------------
+  // CATEGORIES
+  // --------------------------------------------------------------------------
+  getCategories: async (): Promise<Category[]> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = await pool.query(`
+          SELECT c.*, ct.language_code, ct.name AS trans_name
+          FROM categories c
+          LEFT JOIN category_translations ct ON c.id = ct.category_id
+        `);
+        const catMap = new Map<string, Category>();
+        for (const row of res.rows) {
+          if (!catMap.has(row.id)) {
+            catMap.set(row.id, {
+              id: row.id,
+              slug: row.slug,
+              icon: row.icon,
+              type: row.type,
+              name: {} as any,
+            });
+          }
+          const cat = catMap.get(row.id)!;
+          if (row.language_code && row.trans_name) {
+            cat.name[row.language_code as SupportedLanguage] = row.trans_name;
+          }
+        }
+        return Array.from(catMap.values());
+      } catch (err) {
+        console.error('[PostgreSQL] getCategories error:', err);
+      }
+    }
+    return memoryDb.categories;
+  },
+
+  getCategoryById: async (id: string): Promise<Category | null> => {
+    const categories = await db.getCategories();
+    return categories.find((c) => c.id === id) || null;
+  },
+
+  // --------------------------------------------------------------------------
+  // PRODUCTS
+  // --------------------------------------------------------------------------
+  getProducts: async (filter?: {
     categoryId?: string;
     search?: string;
     featured?: boolean;
@@ -978,189 +1158,760 @@ export const db = {
     maxPrice?: number;
     sortBy?: string;
     language?: SupportedLanguage;
-  }) => {
-    let result = [...memoryDb.products];
-    const lang = filter?.language || 'en';
+  }): Promise<Product[]> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = await pool.query(`
+          SELECT p.*, pt.language_code, pt.name AS trans_name, pt.description AS trans_desc
+          FROM products p
+          LEFT JOIN product_translations pt ON p.id = pt.product_id
+        `);
+        const prodMap = new Map<string, Product>();
+        for (const row of res.rows) {
+          if (!prodMap.has(row.id)) {
+            prodMap.set(row.id, {
+              id: row.id,
+              sku: row.sku,
+              slug: row.slug,
+              categoryId: row.category_id,
+              price: Number(row.price_kes),
+              discountPrice: row.discount_price_kes ? Number(row.discount_price_kes) : undefined,
+              images: Array.isArray(row.images) ? row.images : (typeof row.images === 'string' ? JSON.parse(row.images) : []),
+              stockQuantity: row.stock_quantity,
+              isAvailable: row.is_available,
+              featured: row.featured,
+              rating: Number(row.rating || 5.0),
+              reviewCount: row.review_count,
+              origin: row.origin,
+              weight: row.weight || undefined,
+              createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+              name: {} as any,
+              description: {} as any,
+            });
+          }
+          const prod = prodMap.get(row.id)!;
+          if (row.language_code) {
+            if (row.trans_name) prod.name[row.language_code as SupportedLanguage] = row.trans_name;
+            if (row.trans_desc) prod.description[row.language_code as SupportedLanguage] = row.trans_desc;
+          }
+        }
+        let list = Array.from(prodMap.values());
 
-    if (filter?.categoryId) {
-      result = result.filter((p) => p.categoryId === filter.categoryId);
+        if (filter?.categoryId) {
+          list = list.filter((p) => p.categoryId === filter.categoryId);
+        }
+        if (filter?.featured !== undefined) {
+          list = list.filter((p) => p.featured === filter.featured);
+        }
+        if (filter?.minPrice !== undefined) {
+          list = list.filter((p) => (p.discountPrice || p.price) >= filter.minPrice!);
+        }
+        if (filter?.maxPrice !== undefined) {
+          list = list.filter((p) => (p.discountPrice || p.price) <= filter.maxPrice!);
+        }
+        if (filter?.search) {
+          const q = filter.search.toLowerCase();
+          list = list.filter((p) => {
+            const nameMatches = Object.values(p.name).some((n) => n.toLowerCase().includes(q));
+            const descMatches = Object.values(p.description).some((d) => d.toLowerCase().includes(q));
+            return nameMatches || descMatches || p.origin.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
+          });
+        }
+        if (filter?.sortBy) {
+          if (filter.sortBy === 'price_asc') {
+            list.sort((a, b) => (a.discountPrice || a.price) - (b.discountPrice || b.price));
+          } else if (filter.sortBy === 'price_desc') {
+            list.sort((a, b) => (b.discountPrice || b.price) - (a.discountPrice || a.price));
+          } else if (filter.sortBy === 'rating') {
+            list.sort((a, b) => b.rating - a.rating);
+          } else if (filter.sortBy === 'newest') {
+            list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          }
+        }
+        return list;
+      } catch (err) {
+        console.error('[PostgreSQL] getProducts error:', err);
+      }
     }
-    if (filter?.featured !== undefined) {
-      result = result.filter((p) => p.featured === filter.featured);
-    }
-    if (filter?.minPrice !== undefined) {
-      result = result.filter((p) => (p.discountPrice || p.price) >= filter.minPrice!);
-    }
-    if (filter?.maxPrice !== undefined) {
-      result = result.filter((p) => (p.discountPrice || p.price) <= filter.maxPrice!);
-    }
-    if (filter?.search) {
-      const q = filter.search.toLowerCase();
-      result = result.filter((p) => {
-        const nameMatches = Object.values(p.name).some((n) => n.toLowerCase().includes(q));
-        const descMatches = Object.values(p.description).some((d) => d.toLowerCase().includes(q));
-        const originMatches = p.origin.toLowerCase().includes(q);
-        const skuMatches = p.sku.toLowerCase().includes(q);
-        return nameMatches || descMatches || originMatches || skuMatches;
-      });
-    }
+    return memoryDb.products;
+  },
 
-    if (filter?.sortBy) {
-      if (filter.sortBy === 'price_asc') {
-        result.sort((a, b) => (a.discountPrice || a.price) - (b.discountPrice || b.price));
-      } else if (filter.sortBy === 'price_desc') {
-        result.sort((a, b) => (b.discountPrice || b.price) - (a.discountPrice || a.price));
-      } else if (filter.sortBy === 'rating') {
-        result.sort((a, b) => b.rating - a.rating);
-      } else if (filter.sortBy === 'newest') {
-        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  getProductById: async (id: string): Promise<Product | null> => {
+    const products = await db.getProducts();
+    return products.find((p) => p.id === id) || null;
+  },
+
+  createProduct: async (product: Product): Promise<Product> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `INSERT INTO products (id, sku, slug, category_id, price_kes, discount_price_kes, stock_quantity, is_available, featured, rating, review_count, origin, weight, images, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $15)`,
+          [
+            product.id,
+            product.sku,
+            product.slug,
+            product.categoryId,
+            product.price,
+            product.discountPrice || null,
+            product.stockQuantity,
+            product.isAvailable,
+            product.featured,
+            product.rating,
+            product.reviewCount,
+            product.origin,
+            product.weight || null,
+            JSON.stringify(product.images),
+            product.createdAt,
+          ]
+        );
+
+        for (const [lang, name] of Object.entries(product.name)) {
+          const desc = product.description[lang as SupportedLanguage] || '';
+          await pool.query(
+            `INSERT INTO product_translations (id, product_id, language_code, name, description)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (product_id, language_code) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description`,
+            [`${product.id}_${lang}`, product.id, lang, name, desc]
+          );
+        }
+      } catch (err) {
+        console.error('[PostgreSQL] createProduct error:', err);
       }
     }
 
-    return result;
-  },
-  getProductById: (id: string) => memoryDb.products.find((p) => p.id === id),
-  createProduct: (product: Product) => {
     memoryDb.products.unshift(product);
-    persistDb();
     return product;
   },
-  updateProduct: (id: string, updates: Partial<Product>) => {
+
+  updateProduct: async (id: string, updates: Partial<Product>): Promise<Product | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `UPDATE products SET
+             price_kes = COALESCE($1, price_kes),
+             discount_price_kes = COALESCE($2, discount_price_kes),
+             stock_quantity = COALESCE($3, stock_quantity),
+             is_available = COALESCE($4, is_available),
+             origin = COALESCE($5, origin),
+             images = COALESCE($6, images),
+             updated_at = NOW()
+           WHERE id = $7`,
+          [
+            updates.price || null,
+            updates.discountPrice || null,
+            updates.stockQuantity !== undefined ? updates.stockQuantity : null,
+            updates.isAvailable !== undefined ? updates.isAvailable : null,
+            updates.origin || null,
+            updates.images ? JSON.stringify(updates.images) : null,
+            id,
+          ]
+        );
+      } catch (err) {
+        console.error('[PostgreSQL] updateProduct error:', err);
+      }
+    }
+
     const idx = memoryDb.products.findIndex((p) => p.id === id);
     if (idx !== -1) {
       memoryDb.products[idx] = { ...memoryDb.products[idx], ...updates };
-      persistDb();
       return memoryDb.products[idx];
     }
     return null;
   },
-  deleteProduct: (id: string) => {
+
+  deleteProduct: async (id: string): Promise<Product | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query('DELETE FROM products WHERE id = $1', [id]);
+      } catch (err) {
+        console.error('[PostgreSQL] deleteProduct error:', err);
+      }
+    }
+
     const idx = memoryDb.products.findIndex((p) => p.id === id);
     if (idx !== -1) {
-      const deleted = memoryDb.products.splice(idx, 1)[0];
-      persistDb();
-      return deleted;
+      return memoryDb.products.splice(idx, 1)[0];
     }
     return null;
   },
 
-  // Services
-  getServices: (filter?: { categoryId?: string; search?: string; featured?: boolean }) => {
-    let result = [...memoryDb.services];
-    if (filter?.categoryId) {
-      result = result.filter((s) => s.categoryId === filter.categoryId);
+  // --------------------------------------------------------------------------
+  // SERVICES
+  // --------------------------------------------------------------------------
+  getServices: async (filter?: { categoryId?: string; search?: string; featured?: boolean }): Promise<Service[]> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = await pool.query(`
+          SELECT s.*, st.language_code, st.name AS trans_name, st.description AS trans_desc
+          FROM services s
+          LEFT JOIN service_translations st ON s.id = st.service_id
+        `);
+        const servMap = new Map<string, Service>();
+        for (const row of res.rows) {
+          if (!servMap.has(row.id)) {
+            servMap.set(row.id, {
+              id: row.id,
+              slug: row.slug,
+              categoryId: row.category_id,
+              price: Number(row.price_kes),
+              duration: row.duration,
+              provider: row.provider,
+              location: row.location,
+              isAvailable: row.is_available,
+              featured: row.featured,
+              rating: Number(row.rating || 5.0),
+              reviewCount: row.review_count,
+              images: Array.isArray(row.images) ? row.images : (typeof row.images === 'string' ? JSON.parse(row.images) : []),
+              createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+              name: {} as any,
+              description: {} as any,
+            });
+          }
+          const serv = servMap.get(row.id)!;
+          if (row.language_code) {
+            if (row.trans_name) serv.name[row.language_code as SupportedLanguage] = row.trans_name;
+            if (row.trans_desc) serv.description[row.language_code as SupportedLanguage] = row.trans_desc;
+          }
+        }
+        let list = Array.from(servMap.values());
+        if (filter?.categoryId) {
+          list = list.filter((s) => s.categoryId === filter.categoryId);
+        }
+        if (filter?.featured !== undefined) {
+          list = list.filter((s) => s.featured === filter.featured);
+        }
+        if (filter?.search) {
+          const q = filter.search.toLowerCase();
+          list = list.filter((s) => {
+            const nameMatches = Object.values(s.name).some((n) => n.toLowerCase().includes(q));
+            const descMatches = Object.values(s.description).some((d) => d.toLowerCase().includes(q));
+            return nameMatches || descMatches || s.provider.toLowerCase().includes(q) || s.location.toLowerCase().includes(q);
+          });
+        }
+        return list;
+      } catch (err) {
+        console.error('[PostgreSQL] getServices error:', err);
+      }
     }
-    if (filter?.featured !== undefined) {
-      result = result.filter((s) => s.featured === filter.featured);
-    }
-    if (filter?.search) {
-      const q = filter.search.toLowerCase();
-      result = result.filter((s) => {
-        const nameMatches = Object.values(s.name).some((n) => n.toLowerCase().includes(q));
-        const descMatches = Object.values(s.description).some((d) => d.toLowerCase().includes(q));
-        const providerMatches = s.provider.toLowerCase().includes(q);
-        const locMatches = s.location.toLowerCase().includes(q);
-        return nameMatches || descMatches || providerMatches || locMatches;
-      });
-    }
-    return result;
+    return memoryDb.services;
   },
-  getServiceById: (id: string) => memoryDb.services.find((s) => s.id === id),
-  createService: (service: Service) => {
+
+  getServiceById: async (id: string): Promise<Service | null> => {
+    const services = await db.getServices();
+    return services.find((s) => s.id === id) || null;
+  },
+
+  createService: async (service: Service): Promise<Service> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `INSERT INTO services (id, slug, category_id, price_kes, duration, provider, location, is_available, featured, rating, review_count, images, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $13)`,
+          [
+            service.id,
+            service.slug,
+            service.categoryId,
+            service.price,
+            service.duration,
+            service.provider,
+            service.location,
+            service.isAvailable,
+            service.featured,
+            service.rating,
+            service.reviewCount,
+            JSON.stringify(service.images),
+            service.createdAt,
+          ]
+        );
+
+        for (const [lang, name] of Object.entries(service.name)) {
+          const desc = service.description[lang as SupportedLanguage] || '';
+          await pool.query(
+            `INSERT INTO service_translations (id, service_id, language_code, name, description)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (service_id, language_code) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description`,
+            [`${service.id}_${lang}`, service.id, lang, name, desc]
+          );
+        }
+      } catch (err) {
+        console.error('[PostgreSQL] createService error:', err);
+      }
+    }
+
     memoryDb.services.unshift(service);
-    persistDb();
     return service;
   },
-  updateService: (id: string, updates: Partial<Service>) => {
+
+  updateService: async (id: string, updates: Partial<Service>): Promise<Service | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `UPDATE services SET
+             price_kes = COALESCE($1, price_kes),
+             duration = COALESCE($2, duration),
+             provider = COALESCE($3, provider),
+             location = COALESCE($4, location),
+             is_available = COALESCE($5, is_available),
+             images = COALESCE($6, images),
+             updated_at = NOW()
+           WHERE id = $7`,
+          [
+            updates.price || null,
+            updates.duration || null,
+            updates.provider || null,
+            updates.location || null,
+            updates.isAvailable !== undefined ? updates.isAvailable : null,
+            updates.images ? JSON.stringify(updates.images) : null,
+            id,
+          ]
+        );
+      } catch (err) {
+        console.error('[PostgreSQL] updateService error:', err);
+      }
+    }
+
     const idx = memoryDb.services.findIndex((s) => s.id === id);
     if (idx !== -1) {
       memoryDb.services[idx] = { ...memoryDb.services[idx], ...updates };
-      persistDb();
       return memoryDb.services[idx];
     }
     return null;
   },
-  deleteService: (id: string) => {
+
+  deleteService: async (id: string): Promise<Service | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query('DELETE FROM services WHERE id = $1', [id]);
+      } catch (err) {
+        console.error('[PostgreSQL] deleteService error:', err);
+      }
+    }
+
     const idx = memoryDb.services.findIndex((s) => s.id === id);
     if (idx !== -1) {
-      const deleted = memoryDb.services.splice(idx, 1)[0];
-      persistDb();
-      return deleted;
+      return memoryDb.services.splice(idx, 1)[0];
     }
     return null;
   },
 
-  // Orders
-  getOrders: (filter?: { userId?: string; status?: string }) => {
+  // --------------------------------------------------------------------------
+  // ORDERS
+  // --------------------------------------------------------------------------
+  getOrders: async (filter?: { userId?: string; status?: string }): Promise<Order[]> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        let sql = 'SELECT * FROM orders';
+        const params: any[] = [];
+        if (filter?.userId) {
+          params.push(filter.userId);
+          sql += ` WHERE user_id = $${params.length}`;
+        }
+        if (filter?.status) {
+          params.push(filter.status);
+          sql += params.length === 1 ? ` WHERE order_status = $${params.length}` : ` AND order_status = $${params.length}`;
+        }
+        sql += ' ORDER BY created_at DESC';
+
+        const orderRes = await pool.query(sql, params);
+        const itemRes = await pool.query('SELECT * FROM order_items');
+        const itemsByOrder = new Map<string, any[]>();
+        for (const it of itemRes.rows) {
+          if (!itemsByOrder.has(it.order_id)) itemsByOrder.set(it.order_id, []);
+          itemsByOrder.get(it.order_id)!.push({
+            id: it.id,
+            orderId: it.order_id,
+            itemType: it.item_type,
+            itemId: it.item_id,
+            name: it.name,
+            quantity: it.quantity,
+            unitPrice: Number(it.unit_price),
+            totalPrice: Number(it.total_price),
+            image: it.image,
+          });
+        }
+
+        return orderRes.rows.map((r) => ({
+          id: r.id,
+          orderNumber: r.order_number,
+          userId: r.user_id || undefined,
+          customerName: r.customer_name,
+          customerEmail: r.customer_email,
+          customerPhone: r.customer_phone,
+          deliveryAddress: r.delivery_address,
+          county: r.county,
+          town: r.town,
+          notes: r.order_notes || undefined,
+          subtotal: Number(r.subtotal),
+          deliveryFee: Number(r.delivery_fee),
+          discount: Number(r.discount),
+          totalAmount: Number(r.total_amount),
+          orderStatus: r.order_status,
+          paymentStatus: r.payment_status,
+          paymentMethod: r.payment_method,
+          mpesaReceiptNumber: r.mpesa_receipt_number || undefined,
+          checkoutRequestId: r.checkout_request_id || undefined,
+          createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+          updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+          items: itemsByOrder.get(r.id) || [],
+        }));
+      } catch (err) {
+        console.error('[PostgreSQL] getOrders error:', err);
+      }
+    }
+
     let result = [...memoryDb.orders];
-    if (filter?.userId) {
-      result = result.filter((o) => o.userId === filter.userId);
-    }
-    if (filter?.status) {
-      result = result.filter((o) => o.orderStatus === filter.status);
-    }
+    if (filter?.userId) result = result.filter((o) => o.userId === filter.userId);
+    if (filter?.status) result = result.filter((o) => o.orderStatus === filter.status);
     return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   },
-  getOrderById: (id: string) => memoryDb.orders.find((o) => o.id === id || o.orderNumber === id),
-  createOrder: (order: Order) => {
+
+  getOrderById: async (id: string): Promise<Order | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1 OR order_number = $1', [id]);
+        if (orderRes.rows.length === 0) return null;
+        const r = orderRes.rows[0];
+        const itemRes = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [r.id]);
+
+        return {
+          id: r.id,
+          orderNumber: r.order_number,
+          userId: r.user_id || undefined,
+          customerName: r.customer_name,
+          customerEmail: r.customer_email,
+          customerPhone: r.customer_phone,
+          deliveryAddress: r.delivery_address,
+          county: r.county,
+          town: r.town,
+          notes: r.order_notes || undefined,
+          subtotal: Number(r.subtotal),
+          deliveryFee: Number(r.delivery_fee),
+          discount: Number(r.discount),
+          totalAmount: Number(r.total_amount),
+          orderStatus: r.order_status,
+          paymentStatus: r.payment_status,
+          paymentMethod: r.payment_method,
+          mpesaReceiptNumber: r.mpesa_receipt_number || undefined,
+          checkoutRequestId: r.checkout_request_id || undefined,
+          createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+          updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+          items: itemRes.rows.map((it) => ({
+            id: it.id,
+            orderId: it.order_id,
+            itemType: it.item_type,
+            itemId: it.item_id,
+            name: it.name,
+            quantity: it.quantity,
+            unitPrice: Number(it.unit_price),
+            totalPrice: Number(it.total_price),
+            image: it.image,
+          })),
+        };
+      } catch (err) {
+        console.error('[PostgreSQL] getOrderById error:', err);
+      }
+    }
+
+    return memoryDb.orders.find((o) => o.id === id || o.orderNumber === id) || null;
+  },
+
+  createOrder: async (order: Order): Promise<Order> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `INSERT INTO orders (id, order_number, user_id, customer_name, customer_email, customer_phone, delivery_address, county, town, order_notes, subtotal, delivery_fee, discount, total_amount, order_status, payment_status, payment_method, mpesa_receipt_number, checkout_request_id, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`,
+          [
+            order.id,
+            order.orderNumber,
+            order.userId || null,
+            order.customerName,
+            order.customerEmail,
+            order.customerPhone,
+            order.deliveryAddress,
+            order.county,
+            order.town,
+            order.notes || null,
+            order.subtotal,
+            order.deliveryFee,
+            order.discount,
+            order.totalAmount,
+            order.orderStatus,
+            order.paymentStatus,
+            order.paymentMethod,
+            order.mpesaReceiptNumber || null,
+            order.checkoutRequestId || null,
+            order.createdAt,
+            order.updatedAt,
+          ]
+        );
+
+        for (const item of order.items) {
+          const unitPrice = item.unitPrice || 0;
+          const totalPrice = item.totalPrice || (unitPrice * item.quantity);
+          await pool.query(
+            `INSERT INTO order_items (id, order_id, item_type, item_id, name, quantity, unit_price, total_price, image)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [
+              item.id,
+              order.id,
+              item.itemType,
+              item.itemId,
+              item.name,
+              item.quantity,
+              unitPrice,
+              totalPrice,
+              item.image || null,
+            ]
+          );
+        }
+      } catch (err) {
+        console.error('[PostgreSQL] createOrder error:', err);
+      }
+    }
+
     memoryDb.orders.unshift(order);
-    persistDb();
     return order;
   },
-  updateOrderStatus: (
+
+  updateOrderStatus: async (
     id: string,
     orderStatus: Order['orderStatus'],
     paymentStatus?: Order['paymentStatus'],
     mpesaReceipt?: string
-  ) => {
+  ): Promise<Order | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `UPDATE orders SET
+             order_status = $1,
+             payment_status = COALESCE($2, payment_status),
+             mpesa_receipt_number = COALESCE($3, mpesa_receipt_number),
+             updated_at = NOW()
+           WHERE id = $4 OR order_number = $4`,
+          [orderStatus, paymentStatus || null, mpesaReceipt || null, id]
+        );
+      } catch (err) {
+        console.error('[PostgreSQL] updateOrderStatus error:', err);
+      }
+    }
+
     const order = memoryDb.orders.find((o) => o.id === id || o.orderNumber === id);
     if (order) {
       order.orderStatus = orderStatus;
       if (paymentStatus) order.paymentStatus = paymentStatus;
       if (mpesaReceipt) order.mpesaReceiptNumber = mpesaReceipt;
       order.updatedAt = new Date().toISOString();
-      persistDb();
       return order;
     }
     return null;
   },
 
-  // Payments
-  getPayments: () => {
+  // --------------------------------------------------------------------------
+  // PAYMENTS
+  // --------------------------------------------------------------------------
+  getPayments: async (): Promise<PaymentTransaction[]> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = await pool.query('SELECT * FROM payments ORDER BY created_at DESC');
+        return res.rows.map((r) => ({
+          id: r.id,
+          orderId: r.order_id,
+          orderNumber: r.order_number,
+          amount: Number(r.amount),
+          phoneNumber: r.phone_number,
+          merchantRequestId: r.merchant_request_id || undefined,
+          checkoutRequestId: r.checkout_request_id,
+          mpesaReceiptNumber: r.mpesa_receipt_number || undefined,
+          resultCode: r.result_code !== null ? r.result_code : undefined,
+          resultDesc: r.result_desc || undefined,
+          status: r.status,
+          environment: r.environment,
+          createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+          completedAt: r.completed_at ? new Date(r.completed_at).toISOString() : undefined,
+        }));
+      } catch (err) {
+        console.error('[PostgreSQL] getPayments error:', err);
+      }
+    }
+
     return [...memoryDb.payments].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   },
-  getPaymentByCheckoutId: (checkoutRequestId: string) => {
-    return memoryDb.payments.find((p) => p.checkoutRequestId === checkoutRequestId);
+
+  getPaymentByCheckoutId: async (checkoutRequestId: string): Promise<PaymentTransaction | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = await pool.query('SELECT * FROM payments WHERE checkout_request_id = $1', [checkoutRequestId]);
+        if (res.rows.length === 0) return null;
+        const r = res.rows[0];
+        return {
+          id: r.id,
+          orderId: r.order_id,
+          orderNumber: r.order_number,
+          amount: Number(r.amount),
+          phoneNumber: r.phone_number,
+          merchantRequestId: r.merchant_request_id || undefined,
+          checkoutRequestId: r.checkout_request_id,
+          mpesaReceiptNumber: r.mpesa_receipt_number || undefined,
+          resultCode: r.result_code !== null ? r.result_code : undefined,
+          resultDesc: r.result_desc || undefined,
+          status: r.status,
+          environment: r.environment,
+          createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+          completedAt: r.completed_at ? new Date(r.completed_at).toISOString() : undefined,
+        };
+      } catch (err) {
+        console.error('[PostgreSQL] getPaymentByCheckoutId error:', err);
+      }
+    }
+
+    return memoryDb.payments.find((p) => p.checkoutRequestId === checkoutRequestId) || null;
   },
-  createPaymentTransaction: (tx: PaymentTransaction) => {
+
+  createPaymentTransaction: async (tx: PaymentTransaction): Promise<PaymentTransaction> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `INSERT INTO payments (id, order_id, order_number, amount, phone_number, merchant_request_id, checkout_request_id, mpesa_receipt_number, result_code, result_desc, status, environment, created_at, completed_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+          [
+            tx.id,
+            tx.orderId,
+            tx.orderNumber,
+            tx.amount,
+            tx.phoneNumber,
+            tx.merchantRequestId || null,
+            tx.checkoutRequestId,
+            tx.mpesaReceiptNumber || null,
+            tx.resultCode !== undefined ? tx.resultCode : null,
+            tx.resultDesc || null,
+            tx.status,
+            tx.environment,
+            tx.createdAt,
+            tx.completedAt || null,
+          ]
+        );
+      } catch (err) {
+        console.error('[PostgreSQL] createPaymentTransaction error:', err);
+      }
+    }
+
     memoryDb.payments.unshift(tx);
-    persistDb();
     return tx;
   },
-  updatePaymentTransaction: (
+
+  updatePaymentTransaction: async (
     checkoutRequestId: string,
     updates: Partial<PaymentTransaction>
-  ) => {
+  ): Promise<PaymentTransaction | null> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `UPDATE payments SET
+             status = COALESCE($1, status),
+             mpesa_receipt_number = COALESCE($2, mpesa_receipt_number),
+             result_code = COALESCE($3, result_code),
+             result_desc = COALESCE($4, result_desc),
+             completed_at = COALESCE($5, completed_at)
+           WHERE checkout_request_id = $6`,
+          [
+            updates.status || null,
+            updates.mpesaReceiptNumber || null,
+            updates.resultCode !== undefined ? updates.resultCode : null,
+            updates.resultDesc || null,
+            updates.completedAt ? new Date(updates.completedAt) : null,
+            checkoutRequestId,
+          ]
+        );
+      } catch (err) {
+        console.error('[PostgreSQL] updatePaymentTransaction error:', err);
+      }
+    }
+
     const tx = memoryDb.payments.find((p) => p.checkoutRequestId === checkoutRequestId);
     if (tx) {
       Object.assign(tx, updates);
-      persistDb();
       return tx;
     }
     return null;
   },
 
-  // Wishlist
-  getWishlist: (userId: string) => {
+  // --------------------------------------------------------------------------
+  // WISHLIST
+  // --------------------------------------------------------------------------
+  getWishlist: async (userId: string): Promise<Product[]> => {
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = await pool.query(
+          `SELECT p.*, pt.language_code, pt.name AS trans_name, pt.description AS trans_desc
+           FROM wishlist_items wi
+           JOIN wishlist w ON wi.wishlist_id = w.id
+           JOIN products p ON wi.product_id = p.id
+           LEFT JOIN product_translations pt ON p.id = pt.product_id
+           WHERE w.user_id = $1`,
+          [userId]
+        );
+        const prodMap = new Map<string, Product>();
+        for (const row of res.rows) {
+          if (!prodMap.has(row.id)) {
+            prodMap.set(row.id, {
+              id: row.id,
+              sku: row.sku,
+              slug: row.slug,
+              categoryId: row.category_id,
+              price: Number(row.price_kes),
+              discountPrice: row.discount_price_kes ? Number(row.discount_price_kes) : undefined,
+              images: Array.isArray(row.images) ? row.images : (typeof row.images === 'string' ? JSON.parse(row.images) : []),
+              stockQuantity: row.stock_quantity,
+              isAvailable: row.is_available,
+              featured: row.featured,
+              rating: Number(row.rating || 5.0),
+              reviewCount: row.review_count,
+              origin: row.origin,
+              weight: row.weight || undefined,
+              createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+              name: {} as any,
+              description: {} as any,
+            });
+          }
+          const prod = prodMap.get(row.id)!;
+          if (row.language_code) {
+            if (row.trans_name) prod.name[row.language_code as SupportedLanguage] = row.trans_name;
+            if (row.trans_desc) prod.description[row.language_code as SupportedLanguage] = row.trans_desc;
+          }
+        }
+        return Array.from(prodMap.values());
+      } catch (err) {
+        console.error('[PostgreSQL] getWishlist error:', err);
+      }
+    }
+
     const productIds = memoryDb.wishlists[userId] || [];
     return memoryDb.products.filter((p) => productIds.includes(p.id));
   },
-  toggleWishlist: (userId: string, productId: string) => {
-    if (!memoryDb.wishlists[userId]) {
-      memoryDb.wishlists[userId] = [];
-    }
+
+  toggleWishlist: async (userId: string, productId: string): Promise<{ added: boolean; list: string[] }> => {
+    if (!memoryDb.wishlists[userId]) memoryDb.wishlists[userId] = [];
     const list = memoryDb.wishlists[userId];
     const index = list.indexOf(productId);
     let added = false;
@@ -1171,22 +1922,71 @@ export const db = {
       list.splice(index, 1);
       added = false;
     }
-    persistDb();
+
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `INSERT INTO wishlist (id, user_id, created_at) VALUES ($1, $2, NOW()) ON CONFLICT (user_id) DO NOTHING`,
+          [`wsh_${userId}`, userId]
+        );
+
+        if (added) {
+          await pool.query(
+            `INSERT INTO wishlist_items (id, wishlist_id, product_id, created_at)
+             VALUES ($1, $2, $3, NOW()) ON CONFLICT (wishlist_id, product_id) DO NOTHING`,
+            [`wi_${userId}_${productId}`, `wsh_${userId}`, productId]
+          );
+        } else {
+          await pool.query(
+            `DELETE FROM wishlist_items WHERE wishlist_id = $1 AND product_id = $2`,
+            [`wsh_${userId}`, productId]
+          );
+        }
+      } catch (err) {
+        console.error('[PostgreSQL] toggleWishlist error:', err);
+      }
+    }
+
     return { added, list };
   },
 
-  // Analytics
-  getAdminStats: () => {
-    const totalOrders = memoryDb.orders.length;
-    const paidOrders = memoryDb.orders.filter(
-      (o) => o.paymentStatus === 'completed' || o.orderStatus === 'paid'
-    );
+  // --------------------------------------------------------------------------
+  // DIRECT QUERY HELPER (Execute SQL directly against PostgreSQL)
+  // --------------------------------------------------------------------------
+  query: async (text: string, params?: any[]): Promise<pg.QueryResult<any>> => {
+    const pool = getPgPool();
+    if (!pool) {
+      throw new Error('[PostgreSQL] No database connection available (DATABASE_URL not configured).');
+    }
+    return pool.query(text, params);
+  },
+
+  // --------------------------------------------------------------------------
+  // ANALYTICS & STATS
+  // --------------------------------------------------------------------------
+  getAdminStats: async (): Promise<{
+    totalRevenue: number;
+    totalOrders: number;
+    paidOrdersCount: number;
+    pendingOrders: number;
+    totalCustomers: number;
+    productsCount: number;
+    servicesCount: number;
+    lowStockCount: number;
+    lowStockProducts: Product[];
+  }> => {
+    const orders = await db.getOrders();
+    const products = await db.getProducts();
+    const services = await db.getServices();
+    const users = await db.getAllUsers();
+
+    const totalOrders = orders.length;
+    const paidOrders = orders.filter((o) => o.paymentStatus === 'completed' || o.orderStatus === 'paid');
     const totalRevenue = paidOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-    const pendingOrders = memoryDb.orders.filter(
-      (o) => o.orderStatus === 'pending' || o.orderStatus === 'payment_pending'
-    ).length;
-    const totalCustomers = memoryDb.users.filter((u) => u.role === 'customer').length;
-    const lowStockProducts = memoryDb.products.filter((p) => p.stockQuantity < 20);
+    const pendingOrders = orders.filter((o) => o.orderStatus === 'pending' || o.orderStatus === 'payment_pending').length;
+    const totalCustomers = users.filter((u) => u.role === 'customer').length;
+    const lowStockProducts = products.filter((p) => p.stockQuantity < 20);
 
     return {
       totalRevenue,
@@ -1194,8 +1994,8 @@ export const db = {
       paidOrdersCount: paidOrders.length,
       pendingOrders,
       totalCustomers,
-      productsCount: memoryDb.products.length,
-      servicesCount: memoryDb.services.length,
+      productsCount: products.length,
+      servicesCount: services.length,
       lowStockCount: lowStockProducts.length,
       lowStockProducts,
     };

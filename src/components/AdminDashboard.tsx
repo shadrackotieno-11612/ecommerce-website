@@ -211,10 +211,8 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
         <p className="text-stone-500 text-sm max-w-md mx-auto">
           You must be signed in with an administrator account to view the merchant backoffice.
         </p>
-        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 max-w-sm mx-auto text-left">
-          <strong>Seed Admin Credentials:</strong>
-          <br />Email: <code className="font-bold">admin@zawadi.co.ke</code>
-          <br />Password: <code className="font-bold">Admin@2026!</code>
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 max-w-sm mx-auto text-center">
+          Administrator accounts are provisioned securely via environment variables (<code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD</code>).
         </div>
         <button
           onClick={onNavigateHome}

@@ -93,7 +93,7 @@ export const LionLogo: React.FC<LionLogoProps> = ({
             <span
               className={`font-black tracking-tight text-stone-950 font-['Outfit',sans-serif] ${titleClass} group-hover:text-amber-600 transition-colors`}
             >
-              JITU <span className="text-amber-600">STOREs</span>
+              ZAWADI <span className="text-amber-600">KENYA</span>
             </span>
           </div>
           <span className={`text-stone-600 font-bold tracking-wide uppercase ${subClass} mt-0.5`}>

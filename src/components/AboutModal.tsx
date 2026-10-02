@@ -25,7 +25,7 @@ export const AboutModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
 
         <div className="space-y-3">
           <h3 className="font-extrabold text-white text-lg font-['Outfit',sans-serif]">
-            About JITU STOREs
+            About Zawadi Kenya
           </h3>
           <p className="text-stone-300 text-xs sm:text-sm leading-relaxed">
             {t.footer.aboutText}
@@ -57,7 +57,7 @@ export const AboutModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
           </div>
           <div className="text-stone-400 pl-6 space-y-1">
             <p>Kimathi Street, City Centre, Nairobi, Kenya</p>
-            <p className="text-[11px] text-stone-500">Official Commercial License: PVT-JITU2026-KE</p>
+            <p className="text-[11px] text-stone-500">Official Commercial License: PVT-ZAWADI2026-KE</p>
           </div>
         </div>
 

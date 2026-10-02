@@ -82,17 +82,6 @@ export const AuthModal: React.FC = () => {
     }
   };
 
-  const fillDemoAccount = (role: 'admin' | 'customer') => {
-    if (role === 'admin') {
-      setEmail('admin@zawadi.co.ke');
-      setPassword('Admin@2026!');
-    } else {
-      setEmail('customer@zawadi.co.ke');
-      setPassword('Customer@2026!');
-    }
-    setAuthModalMode('login');
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -101,7 +90,7 @@ export const AuthModal: React.FC = () => {
         className="fixed inset-0 bg-black/65 backdrop-blur-xs transition-opacity"
       />
 
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-100 z-10 animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-stone-100 z-10 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="p-6 bg-gradient-to-r from-stone-900 to-emerald-950 text-white relative">
           <button
@@ -287,31 +276,8 @@ export const AuthModal: React.FC = () => {
             </button>
           </form>
 
-          {/* Quick Demo Logins Helper */}
-          <div className="pt-3 border-t border-stone-100">
-            <span className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider block mb-2 text-center">
-              {t.auth.orContinueWith}
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('admin')}
-                className="px-2.5 py-1.5 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-900 text-[11px] font-bold text-center transition cursor-pointer"
-              >
-                Demo Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('customer')}
-                className="px-2.5 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-[11px] font-bold text-center transition cursor-pointer"
-              >
-                Demo Customer
-              </button>
-            </div>
-          </div>
-
           {/* Toggle between Login and Register */}
-          <div className="text-center text-xs text-stone-500 pt-1">
+          <div className="text-center text-xs text-stone-500 pt-3 border-t border-stone-100">
             {authModalMode === 'login' ? (
               <span>
                 {t.auth.noAccount}{' '}

@@ -358,7 +358,7 @@ function MainStorefront() {
                       ))}
                     </div>
                     <p className="text-stone-800 text-xs sm:text-sm italic leading-relaxed font-medium">
-                      "We booked the Nairobi National Park half-day wildlife safari through JITU STOREs. Our guide was extraordinarily knowledgeable and spotted black rhinos!"
+                      "We booked the Nairobi National Park half-day wildlife safari through Zawadi Kenya. Our guide was extraordinarily knowledgeable and spotted black rhinos!"
                     </p>
                     <div className="pt-2 border-t border-stone-200 flex items-center justify-between text-xs">
                       <div>

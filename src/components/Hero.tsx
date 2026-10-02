@@ -28,7 +28,7 @@ export const Hero: React.FC<HeroProps> = ({
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 border-2 border-amber-300 text-amber-950 text-xs font-black tracking-wide shadow-xs">
               <span className="text-base leading-none">🦁</span>
-              <span>JITU STOREs • Premier Marketplace</span>
+              <span>Zawadi Kenya • Premier Marketplace</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] font-['Outfit',sans-serif] text-stone-950">

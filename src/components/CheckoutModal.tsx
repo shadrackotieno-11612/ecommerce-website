@@ -80,10 +80,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
     setCheckoutModalOpen,
   } = useCart();
 
-  // Form states
+  // Form states initialized from logged in user's saved details
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.phone || '0712 345 678');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [deliveryAddress, setDeliveryAddress] = useState(user?.deliveryAddress || '');
   const [county, setCounty] = useState(user?.county || 'Nairobi');
   const [town, setTown] = useState(user?.town || 'Nairobi');
@@ -100,17 +100,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
   const [mpesaReceipt, setMpesaReceipt] = useState('');
   const [countdown, setCountdown] = useState(30);
 
-  // Sync user details if user logs in during session
+  // Sync / pre-fill logged-in customer's saved details when modal opens or user profile updates
   useEffect(() => {
-    if (user) {
-      if (!fullName) setFullName(user.fullName);
-      if (!email) setEmail(user.email);
-      if (!phone) setPhone(user.phone);
-      if (!deliveryAddress) setDeliveryAddress(user.deliveryAddress || '');
-      if (!county) setCounty(user.county || 'Nairobi');
-      if (!town) setTown(user.town || 'Nairobi');
+    if (user && checkoutModalOpen) {
+      setFullName(user.fullName || '');
+      setEmail(user.email || '');
+      setPhone(user.phone || '');
+      setDeliveryAddress(user.deliveryAddress || '');
+      setCounty(user.county || 'Nairobi');
+      setTown(user.town || 'Nairobi');
     }
-  }, [user]);
+  }, [user, checkoutModalOpen]);
 
   // STK Push Countdown and Polling
   useEffect(() => {
@@ -167,7 +167,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
     setErrorMessage('');
 
     try {
-      // 1. Create the order in the database
+      const token = localStorage.getItem('zawadi_auth_token');
+      const authHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        authHeaders['Authorization'] = `Bearer ${token}`;
+      }
+
+      // 1. Create the order in the database linked to user id
       const orderPayload = {
         userId: user?.id || 'guest',
         customerName: fullName,
@@ -189,7 +197,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
 
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify(orderPayload),
       });
 
@@ -204,7 +212,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
       // 2. Trigger Safaricom Daraja STK Push
       const stkRes = await fetch('/api/mpesa/stk-push', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({
           orderId: orderData.id,
           orderNumber: orderData.orderNumber,
