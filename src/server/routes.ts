@@ -527,8 +527,9 @@ apiRouter.post('/orders', async (req: Request, res: Response) => {
       });
     }
 
-    // Delivery fee: KES 250 for physical products within Kenya, free for services only or over KES 10,000
-    const deliveryFee = hasPhysicalItems && subtotal < 10000 ? 250 : 0;
+    // Delivery fee: KES 250 for physical products within Kenya, free for services only, 1 KES test products (prod_006 / 1 Bob), or over KES 10,000
+    const isOnlyTestItem = items.length > 0 && items.every((i: any) => Number(i.price || 0) <= 1 || i.itemId === 'prod_006' || i.itemId === 'prod_test_001');
+    const deliveryFee = hasPhysicalItems && subtotal < 10000 && !isOnlyTestItem ? 250 : 0;
     const discount = 0;
     const totalAmount = subtotal + deliveryFee - discount;
 

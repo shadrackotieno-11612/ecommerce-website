@@ -207,16 +207,16 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
         <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
           <ShieldCheck className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-black text-stone-900">Administrative Access Required</h2>
-        <p className="text-stone-500 text-sm max-w-md mx-auto">
+        <h2 className="text-2xl font-black text-theme-text">Administrative Access Required</h2>
+        <p className="text-theme-muted text-sm max-w-md mx-auto">
           You must be signed in with an administrator account to view the merchant backoffice.
         </p>
-        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 max-w-sm mx-auto text-center">
+        <div className="p-4 rounded-2xl bg-theme-elevated border-2 border-theme-border text-xs text-theme-text max-w-sm mx-auto text-center font-medium">
           Administrator accounts are provisioned securely via environment variables (<code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD</code>).
         </div>
         <button
           onClick={onNavigateHome}
-          className="px-6 py-2.5 rounded-full bg-stone-900 text-white font-bold text-xs"
+          className="px-6 py-2.5 rounded-full bg-theme-accent hover:opacity-90 text-theme-accent-text font-bold text-xs border-2 border-theme-border cursor-pointer transition shadow-xs"
         >
           {t.common.back} {t.nav.home}
         </button>
@@ -227,7 +227,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Top Admin Header */}
-      <div className="bg-stone-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-stone-800">
+      <div className="bg-theme-elevated text-theme-text p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-2 border-theme-border">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-500/30">
@@ -248,7 +248,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
         <div className="flex items-center gap-3">
           <button
             onClick={loadAdminData}
-            className="p-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 transition cursor-pointer"
+            className="p-2.5 rounded-xl bg-theme-surface hover:bg-theme-elevated text-theme-text border border-theme-border transition cursor-pointer"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -263,7 +263,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
       </div>
 
       {/* Admin Tab Navigation */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-stone-200">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b-2 border-theme-border">
         {[
           { id: 'overview', label: t.admin.overview, icon: TrendingUp },
           { id: 'orders', label: t.admin.manageOrders, icon: Package, badge: orders.length },
@@ -281,8 +281,8 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                 isActive
-                  ? 'bg-stone-900 text-white shadow-xs'
-                  : 'bg-white hover:bg-stone-100 text-stone-700 border border-stone-200'
+                  ? 'bg-theme-accent text-theme-accent-text border-2 border-theme-border shadow-xs'
+                  : 'bg-theme-surface hover:bg-theme-elevated text-theme-text border-2 border-theme-border'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -306,7 +306,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
         <div className="space-y-6">
           {/* KPI Summary Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+            <div className="bg-theme-surface p-5 rounded-2xl border-2 border-theme-border shadow-xs text-theme-text">
               <div className="text-stone-500 text-xs font-semibold uppercase">{t.admin.totalRevenue}</div>
               <div className="text-xl sm:text-2xl font-black text-stone-900 mt-1">
                 {formatPrice(stats.totalRevenue)}
@@ -316,7 +316,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+            <div className="bg-theme-surface p-5 rounded-2xl border-2 border-theme-border shadow-xs text-theme-text">
               <div className="text-stone-500 text-xs font-semibold uppercase">{t.admin.totalOrders}</div>
               <div className="text-xl sm:text-2xl font-black text-stone-900 mt-1">
                 {stats.totalOrders}
@@ -326,7 +326,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+            <div className="bg-theme-surface p-5 rounded-2xl border-2 border-theme-border shadow-xs text-theme-text">
               <div className="text-stone-500 text-xs font-semibold uppercase">{t.admin.productsCount}</div>
               <div className="text-xl sm:text-2xl font-black text-stone-900 mt-1">
                 {stats.productsCount}
@@ -336,7 +336,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+            <div className="bg-theme-surface p-5 rounded-2xl border-2 border-theme-border shadow-xs text-theme-text">
               <div className="text-stone-500 text-xs font-semibold uppercase">{t.admin.lowStockAlert}</div>
               <div className="text-xl sm:text-2xl font-black text-rose-600 mt-1">
                 {stats.lowStockCount}
@@ -346,7 +346,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
           </div>
 
           {/* Recent Orders Overview */}
-          <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-xs space-y-4">
+          <div className="bg-theme-surface p-6 rounded-3xl border-2 border-theme-border shadow-xs text-theme-text space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-stone-900">{t.admin.recentOrders}</h3>
               <button
@@ -357,7 +357,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
               </button>
             </div>
 
-            <div className="divide-y divide-stone-100 text-xs">
+            <div className="divide-y divide-theme-border text-xs">
               {orders.slice(0, 5).map((ord) => (
                 <div key={ord.id} className="py-3 flex items-center justify-between gap-4">
                   <div>
@@ -377,7 +377,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
 
       {/* 2. ORDERS MANAGEMENT TAB */}
       {activeTab === 'orders' && (
-        <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-xs space-y-4">
+        <div className="bg-theme-surface p-6 rounded-3xl border-2 border-theme-border shadow-xs text-theme-text space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-stone-900">{t.admin.manageOrders}</h3>
             <span className="text-xs text-stone-500">{orders.length} total orders</span>
@@ -386,7 +386,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-stone-200 text-stone-400 uppercase font-semibold">
+                <tr className="border-b-2 border-theme-border text-theme-muted uppercase font-semibold">
                   <th className="py-3 px-2">Order #</th>
                   <th className="py-3 px-2">Customer</th>
                   <th className="py-3 px-2">Destination</th>
@@ -397,9 +397,9 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                   <th className="py-3 px-2">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-theme-border">
                 {orders.map((ord) => (
-                  <tr key={ord.id} className="hover:bg-stone-50">
+                  <tr key={ord.id} className="hover:bg-theme-elevated">
                     <td className="py-3 px-2 font-mono font-bold text-stone-900">{ord.orderNumber}</td>
                     <td className="py-3 px-2">
                       <div className="font-semibold text-stone-900">{ord.customerName}</div>
@@ -451,11 +451,11 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
 
       {/* 3. PRODUCTS MANAGEMENT TAB */}
       {activeTab === 'products' && (
-        <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-xs space-y-4">
+        <div className="bg-theme-surface p-6 rounded-3xl border-2 border-theme-border shadow-xs text-theme-text space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-stone-900">{t.admin.manageProducts}</h3>
-              <p className="text-xs text-stone-500">Add and manage multilingual product listings</p>
+              <h3 className="text-base font-bold text-theme-text">{t.admin.manageProducts}</h3>
+              <p className="text-xs text-theme-muted">Add and manage multilingual product listings</p>
             </div>
             <button
               onClick={() => {
@@ -463,7 +463,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                 setEditingProduct(null);
                 setProductModalOpen(true);
               }}
-              className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="px-4 py-2 bg-theme-accent hover:opacity-90 text-theme-accent-text rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs border-2 border-theme-border"
             >
               <Plus className="w-4 h-4" />
               <span>{t.admin.addProduct}</span>
@@ -473,7 +473,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-stone-200 text-stone-400 uppercase font-semibold">
+                <tr className="border-b-2 border-theme-border text-theme-muted uppercase font-semibold">
                   <th className="py-3 px-2">Image</th>
                   <th className="py-3 px-2">SKU</th>
                   <th className="py-3 px-2">Name (English & Kiswahili)</th>
@@ -483,23 +483,23 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                   <th className="py-3 px-2">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-theme-border">
                 {products.map((prod) => (
-                  <tr key={prod.id} className="hover:bg-stone-50">
+                  <tr key={prod.id} className="hover:bg-theme-elevated">
                     <td className="py-2.5 px-2">
                       <img
                         src={prod.images[0]}
                         alt={prod.name.en}
-                        className="w-10 h-10 rounded-lg object-cover bg-stone-100"
+                        className="w-10 h-10 rounded-lg object-cover bg-theme-elevated border border-theme-border"
                       />
                     </td>
-                    <td className="py-2.5 px-2 font-mono font-medium text-stone-600">{prod.sku}</td>
+                    <td className="py-2.5 px-2 font-mono font-medium text-theme-muted">{prod.sku}</td>
                     <td className="py-2.5 px-2">
-                      <div className="font-bold text-stone-900">{prod.name.en}</div>
-                      <div className="text-stone-500 italic text-[11px]">{prod.name.sw}</div>
+                      <div className="font-bold text-theme-text">{prod.name.en}</div>
+                      <div className="text-theme-muted italic text-[11px]">{prod.name.sw}</div>
                     </td>
-                    <td className="py-2.5 px-2 text-stone-600">{prod.origin}</td>
-                    <td className="py-2.5 px-2 font-bold text-stone-900">{formatPrice(prod.price)}</td>
+                    <td className="py-2.5 px-2 text-theme-muted">{prod.origin}</td>
+                    <td className="py-2.5 px-2 font-bold text-theme-text">{formatPrice(prod.price)}</td>
                     <td className="py-2.5 px-2">
                       <span className={`px-2 py-0.5 rounded-full font-bold ${
                         prod.stockQuantity < 15 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'
@@ -510,14 +510,14 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                     <td className="py-2.5 px-2 flex items-center gap-2">
                       <button
                         onClick={() => openEditProduct(prod)}
-                        className="p-1.5 text-stone-600 hover:text-emerald-700 cursor-pointer"
+                        className="p-1.5 text-theme-muted hover:text-theme-accent cursor-pointer"
                         title="Edit"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteProduct(prod.id)}
-                        className="p-1.5 text-stone-600 hover:text-rose-600 cursor-pointer"
+                        className="p-1.5 text-theme-muted hover:text-rose-600 cursor-pointer"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -533,18 +533,18 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
 
       {/* 4. SERVICES MANAGEMENT TAB */}
       {activeTab === 'services' && (
-        <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-xs space-y-4">
+        <div className="bg-theme-surface p-6 rounded-3xl border-2 border-theme-border shadow-xs text-theme-text space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-stone-900">{t.admin.manageServices}</h3>
-              <p className="text-xs text-stone-500">Manage safari guides, green energy audits, and translations</p>
+              <h3 className="text-base font-bold text-theme-text">{t.admin.manageServices}</h3>
+              <p className="text-xs text-theme-muted">Manage safari guides, green energy audits, and translations</p>
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-stone-200 text-stone-400 uppercase font-semibold">
+                <tr className="border-b-2 border-theme-border text-theme-muted uppercase font-semibold">
                   <th className="py-3 px-2">Service Name</th>
                   <th className="py-3 px-2">Provider</th>
                   <th className="py-3 px-2">Location</th>
@@ -552,17 +552,17 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                   <th className="py-3 px-2">Fee (KES)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-theme-border">
                 {services.map((serv) => (
-                  <tr key={serv.id} className="hover:bg-stone-50">
+                  <tr key={serv.id} className="hover:bg-theme-elevated">
                     <td className="py-3 px-2">
-                      <div className="font-bold text-stone-900">{serv.name.en}</div>
-                      <div className="text-stone-500 italic text-[11px]">{serv.name.sw}</div>
+                      <div className="font-bold text-theme-text">{serv.name.en}</div>
+                      <div className="text-theme-muted italic text-[11px]">{serv.name.sw}</div>
                     </td>
-                    <td className="py-3 px-2 font-semibold text-stone-800">{serv.provider}</td>
-                    <td className="py-3 px-2 text-stone-600">{serv.location}</td>
-                    <td className="py-3 px-2 text-stone-600">{serv.duration}</td>
-                    <td className="py-3 px-2 font-bold text-stone-900">{formatPrice(serv.price)}</td>
+                    <td className="py-3 px-2 font-semibold text-theme-text">{serv.provider}</td>
+                    <td className="py-3 px-2 text-theme-muted">{serv.location}</td>
+                    <td className="py-3 px-2 text-theme-muted">{serv.duration}</td>
+                    <td className="py-3 px-2 font-bold text-theme-text">{formatPrice(serv.price)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -573,16 +573,16 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
 
       {/* 5. PAYMENTS LEDGER TAB */}
       {activeTab === 'payments' && (
-        <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-xs space-y-4">
+        <div className="bg-theme-surface p-6 rounded-3xl border-2 border-theme-border shadow-xs text-theme-text space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-stone-900">{t.admin.paymentsLog}</h3>
-            <span className="text-xs text-stone-500">M-Pesa STK Push Audit Trail</span>
+            <h3 className="text-base font-bold text-theme-text">{t.admin.paymentsLog}</h3>
+            <span className="text-xs text-theme-muted">M-Pesa STK Push Audit Trail</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-stone-200 text-stone-400 uppercase font-semibold">
+                <tr className="border-b-2 border-theme-border text-theme-muted uppercase font-semibold">
                   <th className="py-3 px-2">Date</th>
                   <th className="py-3 px-2">Receipt</th>
                   <th className="py-3 px-2">Order #</th>
@@ -592,14 +592,14 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                   <th className="py-3 px-2">Environment</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-theme-border">
                 {payments.map((p) => (
-                  <tr key={p.id} className="hover:bg-stone-50">
-                    <td className="py-2.5 px-2 text-stone-500 font-mono">{new Date(p.createdAt).toLocaleString()}</td>
-                    <td className="py-2.5 px-2 font-mono font-bold text-emerald-800">{p.mpesaReceiptNumber || 'PENDING'}</td>
-                    <td className="py-2.5 px-2 font-mono text-stone-900">{p.orderNumber}</td>
-                    <td className="py-2.5 px-2 font-mono text-stone-700">{p.phoneNumber}</td>
-                    <td className="py-2.5 px-2 font-bold text-stone-900">{formatPrice(p.amount)}</td>
+                  <tr key={p.id} className="hover:bg-theme-elevated">
+                    <td className="py-2.5 px-2 text-theme-muted font-mono">{new Date(p.createdAt).toLocaleString()}</td>
+                    <td className="py-2.5 px-2 font-mono font-bold text-emerald-700">{p.mpesaReceiptNumber || 'PENDING'}</td>
+                    <td className="py-2.5 px-2 font-mono text-theme-text">{p.orderNumber}</td>
+                    <td className="py-2.5 px-2 font-mono text-theme-text">{p.phoneNumber}</td>
+                    <td className="py-2.5 px-2 font-bold text-theme-text">{formatPrice(p.amount)}</td>
                     <td className="py-2.5 px-2">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         p.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : p.status === 'failed' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
@@ -607,7 +607,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                         {p.status}
                       </span>
                     </td>
-                    <td className="py-2.5 px-2 uppercase text-[10px] font-mono text-stone-500">{p.environment}</td>
+                    <td className="py-2.5 px-2 uppercase text-[10px] font-mono text-theme-muted">{p.environment}</td>
                   </tr>
                 ))}
               </tbody>
@@ -618,20 +618,20 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
 
       {/* 6. TRANSLATIONS MANAGEMENT TAB */}
       {activeTab === 'translations' && (
-        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200 shadow-xs space-y-6">
+        <div className="bg-theme-surface p-6 sm:p-8 rounded-3xl border-2 border-theme-border shadow-xs text-theme-text space-y-6">
           <div>
-            <h3 className="text-base font-bold text-stone-900">{t.admin.translationsManager}</h3>
-            <p className="text-xs text-stone-500 mt-0.5">
+            <h3 className="text-base font-bold text-theme-text">{t.admin.translationsManager}</h3>
+            <p className="text-xs text-theme-muted mt-0.5">
               Review and manage 6-language translations for catalog items and interface strings.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {SUPPORTED_LANGUAGES.map((lang) => (
-              <div key={lang.code} className="p-4 rounded-2xl bg-stone-50 border border-stone-200 text-center">
+              <div key={lang.code} className="p-4 rounded-2xl bg-theme-elevated border-2 border-theme-border text-center">
                 <span className="text-3xl block mb-1">{lang.flag}</span>
-                <div className="font-bold text-xs text-stone-900">{lang.nativeName}</div>
-                <div className="text-[10px] text-stone-500">{lang.name} ({lang.code})</div>
+                <div className="font-bold text-xs text-theme-text">{lang.nativeName}</div>
+                <div className="text-[10px] text-theme-muted">{lang.name} ({lang.code})</div>
                 <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-full">
                   100% Translated
                 </span>
@@ -640,18 +640,18 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
           </div>
 
           {/* Sample Product Multilingual Matrix */}
-          <div className="border border-stone-200 rounded-2xl p-4 space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-stone-700">
+          <div className="border-2 border-theme-border rounded-2xl p-4 space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-theme-accent">
               Sample Catalog Item Localization Check (Kenyan AA Coffee)
             </h4>
             <div className="space-y-2 text-xs">
               {SUPPORTED_LANGUAGES.map((lang) => {
                 const sample = products[0]?.name[lang.code] || 'N/A';
                 return (
-                  <div key={lang.code} className="flex items-center gap-3 p-2 bg-stone-50 rounded-xl">
+                  <div key={lang.code} className="flex items-center gap-3 p-2 bg-theme-elevated rounded-xl border border-theme-border">
                     <span className="text-lg shrink-0">{lang.flag}</span>
-                    <span className="w-16 font-bold text-stone-600 uppercase">{lang.code}</span>
-                    <span className="text-stone-900 font-medium">{sample}</span>
+                    <span className="w-16 font-bold text-theme-muted uppercase">{lang.code}</span>
+                    <span className="text-theme-text font-medium">{sample}</span>
                   </div>
                 );
               })}
@@ -662,48 +662,48 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
 
       {/* 7. M-PESA DARAJA SETTINGS & SIMULATION TAB */}
       {activeTab === 'mpesa' && (
-        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200 shadow-xs space-y-6">
+        <div className="bg-theme-surface p-6 sm:p-8 rounded-3xl border-2 border-theme-border shadow-xs text-theme-text space-y-6">
           <div>
-            <h3 className="text-base font-bold text-stone-900">{t.admin.mpesaConfig}</h3>
-            <p className="text-xs text-stone-500 mt-0.5">
+            <h3 className="text-base font-bold text-theme-text">{t.admin.mpesaConfig}</h3>
+            <p className="text-xs text-theme-muted mt-0.5">
               Inspect Safaricom Daraja API environment variables and test STK push gateway connectivity.
             </p>
           </div>
 
           {mpesaConfig && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2 text-xs">
-                <div className="font-bold text-stone-800 uppercase tracking-wider">Gateway Configuration</div>
+              <div className="p-4 rounded-2xl bg-theme-elevated border-2 border-theme-border space-y-2 text-xs">
+                <div className="font-bold text-theme-text uppercase tracking-wider">Gateway Configuration</div>
                 <div className="flex justify-between">
-                  <span className="text-stone-500">Environment</span>
-                  <span className="font-mono font-bold uppercase text-emerald-800">
+                  <span className="text-theme-muted">Environment</span>
+                  <span className="font-mono font-bold uppercase text-emerald-700">
                     {mpesaConfig.environment}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-stone-500">Shortcode</span>
-                  <span className="font-mono font-bold text-stone-800">{mpesaConfig.shortcode}</span>
+                  <span className="text-theme-muted">Shortcode</span>
+                  <span className="font-mono font-bold text-theme-text">{mpesaConfig.shortcode}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-stone-500">Consumer Key Status</span>
+                  <span className="text-theme-muted">Consumer Key Status</span>
                   <span className="font-bold text-emerald-700">
                     {mpesaConfig.hasConsumerKey ? 'Configured' : 'Using Sandbox Fallback'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-stone-500">Callback Webhook</span>
-                  <span className="font-mono text-[11px] truncate max-w-[180px]">{mpesaConfig.callbackUrl}</span>
+                  <span className="text-theme-muted">Callback Webhook</span>
+                  <span className="font-mono text-[11px] truncate max-w-[180px] text-theme-text">{mpesaConfig.callbackUrl}</span>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2 text-xs text-emerald-900">
-                <div className="font-bold text-emerald-950 uppercase tracking-wider">
+              <div className="p-4 rounded-2xl bg-theme-elevated border-2 border-theme-border space-y-2 text-xs text-theme-text">
+                <div className="font-bold text-theme-accent uppercase tracking-wider">
                   Daraja Integration Guide
                 </div>
-                <p className="text-[11px] leading-relaxed">
+                <p className="text-[11px] leading-relaxed text-theme-muted">
                   To connect your official Safaricom credentials, provide the following variables in your hosting environment:
                 </p>
-                <div className="font-mono text-[10px] bg-white p-2.5 rounded-lg border border-emerald-200 space-y-1">
+                <div className="font-mono text-[10px] bg-theme-surface p-2.5 rounded-lg border border-theme-border space-y-1 text-theme-text">
                   <div>MPESA_CONSUMER_KEY=...</div>
                   <div>MPESA_CONSUMER_SECRET=...</div>
                   <div>MPESA_SHORTCODE=174379</div>
@@ -719,14 +719,14 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
       {/* Add / Edit Product Modal with 6 Language Inputs */}
       {productModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-stone-100 space-y-4 my-8 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-              <h3 className="text-lg font-bold text-stone-900">
+          <div className="bg-theme-surface text-theme-text rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border-2 border-theme-border space-y-4 my-8 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b-2 border-theme-border pb-3">
+              <h3 className="text-lg font-bold text-theme-text">
                 {editingProduct ? t.admin.editProduct : t.admin.addProduct}
               </h3>
               <button
                 onClick={() => setProductModalOpen(false)}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition cursor-pointer"
+                className="p-1 rounded-full text-theme-muted hover:text-theme-text hover:bg-theme-elevated transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -734,14 +734,14 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
 
             <form onSubmit={handleSaveProduct} className="space-y-4 text-xs">
               {/* Multilingual Names */}
-              <div className="space-y-2 p-3.5 bg-stone-50 rounded-2xl border border-stone-200">
-                <div className="font-bold text-stone-800 uppercase tracking-wider">
+              <div className="space-y-2 p-3.5 bg-theme-elevated rounded-2xl border-2 border-theme-border">
+                <div className="font-bold text-theme-text uppercase tracking-wider">
                   Product Name (in 6 Languages)
                 </div>
                 {SUPPORTED_LANGUAGES.map((lang) => (
                   <div key={lang.code} className="flex items-center gap-2">
                     <span className="text-base shrink-0">{lang.flag}</span>
-                    <span className="w-14 font-semibold text-stone-500 uppercase">{lang.code} *</span>
+                    <span className="w-14 font-semibold text-theme-muted uppercase">{lang.code} *</span>
                     <input
                       type="text"
                       required={lang.code === 'en'}
@@ -750,7 +750,7 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                         setProdNames({ ...prodNames, [lang.code]: e.target.value })
                       }
                       placeholder={`Product Name in ${lang.nativeName}`}
-                      className="flex-1 px-3 py-1.5 bg-white border-2 border-stone-300 rounded-lg text-xs text-black font-semibold placeholder:text-stone-500 focus:border-amber-500 focus:outline-hidden"
+                      className="flex-1 px-3 py-1.5 bg-theme-surface border-2 border-theme-border rounded-lg text-xs text-theme-text font-semibold placeholder:text-theme-muted focus:border-theme-accent focus:outline-hidden"
                     />
                   </div>
                 ))}
@@ -759,35 +759,35 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
               {/* Price & Stock */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Price (KES) *</label>
+                  <label className="block font-bold text-theme-text mb-1">Price (KES) *</label>
                   <input
                     type="number"
                     required
                     value={prodPrice}
                     onChange={(e) => setProdPrice(e.target.value)}
                     placeholder="1850"
-                    className="w-full px-3 py-2 bg-white border-2 border-stone-300 rounded-xl text-black font-semibold placeholder:text-stone-500 focus:border-amber-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 bg-theme-surface border-2 border-theme-border rounded-xl text-theme-text font-semibold placeholder:text-theme-muted focus:border-theme-accent focus:outline-hidden"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Discount Price (KES)</label>
+                  <label className="block font-bold text-theme-text mb-1">Discount Price (KES)</label>
                   <input
                     type="number"
                     value={prodDiscountPrice}
                     onChange={(e) => setProdDiscountPrice(e.target.value)}
                     placeholder="1650"
-                    className="w-full px-3 py-2 bg-white border-2 border-stone-300 rounded-xl text-black font-semibold placeholder:text-stone-500 focus:border-amber-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 bg-theme-surface border-2 border-theme-border rounded-xl text-theme-text font-semibold placeholder:text-theme-muted focus:border-theme-accent focus:outline-hidden"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Stock Quantity *</label>
+                  <label className="block font-bold text-theme-text mb-1">Stock Quantity *</label>
                   <input
                     type="number"
                     required
                     value={prodStock}
                     onChange={(e) => setProdStock(e.target.value)}
                     placeholder="25"
-                    className="w-full px-3 py-2 bg-white border-2 border-stone-300 rounded-xl text-black font-semibold placeholder:text-stone-500 focus:border-amber-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 bg-theme-surface border-2 border-theme-border rounded-xl text-theme-text font-semibold placeholder:text-theme-muted focus:border-theme-accent focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -795,65 +795,65 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
               {/* Category & Origin */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Category *</label>
+                  <label className="block font-bold text-theme-text mb-1">Category *</label>
                   <select
                     value={prodCategory}
                     onChange={(e) => setProdCategory(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border-2 border-stone-300 rounded-xl text-black font-semibold focus:border-amber-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 bg-theme-surface border-2 border-theme-border rounded-xl text-theme-text font-semibold focus:border-theme-accent focus:outline-hidden"
                   >
-                    <option value="cat_coffee" className="text-black font-semibold">Kenyan Coffee & Tea</option>
-                    <option value="cat_crafts" className="text-black font-semibold">Handmade Crafts & Art</option>
-                    <option value="cat_textiles" className="text-black font-semibold">Kitenge & Fashion</option>
-                    <option value="cat_organic" className="text-black font-semibold">Organic Farm Goods</option>
+                    <option value="cat_coffee">Kenyan Coffee & Tea</option>
+                    <option value="cat_crafts">Handmade Crafts & Art</option>
+                    <option value="cat_textiles">Kitenge & Fashion</option>
+                    <option value="cat_organic">Organic Farm Goods</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-stone-700 mb-1">Origin / Location *</label>
+                  <label className="block font-bold text-theme-text mb-1">Origin / Location *</label>
                   <input
                     type="text"
                     required
                     value={prodOrigin}
                     onChange={(e) => setProdOrigin(e.target.value)}
                     placeholder="e.g. Nyeri County, Mount Kenya"
-                    className="w-full px-3 py-2 bg-white border-2 border-stone-300 rounded-xl text-black font-semibold placeholder:text-stone-500 focus:border-amber-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 bg-theme-surface border-2 border-theme-border rounded-xl text-theme-text font-semibold placeholder:text-theme-muted focus:border-theme-accent focus:outline-hidden"
                   />
                 </div>
               </div>
 
               {/* Image URL */}
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Image URL</label>
+                <label className="block font-bold text-theme-text mb-1">Image URL</label>
                 <input
                   type="text"
                   value={prodImage}
                   onChange={(e) => setProdImage(e.target.value)}
                   placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 bg-white border-2 border-stone-300 rounded-xl text-black font-semibold placeholder:text-stone-500 focus:border-amber-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 bg-theme-surface border-2 border-theme-border rounded-xl text-theme-text font-semibold placeholder:text-theme-muted focus:border-theme-accent focus:outline-hidden"
                 />
               </div>
 
               {/* Multilingual Descriptions */}
-              <div className="space-y-2 p-3.5 bg-stone-50 rounded-2xl border border-stone-200">
-                <div className="font-bold text-stone-800 uppercase tracking-wider">
+              <div className="space-y-2 p-3.5 bg-theme-elevated rounded-2xl border-2 border-theme-border">
+                <div className="font-bold text-theme-text uppercase tracking-wider">
                   Product Description (English & Kiswahili)
                 </div>
                 <div>
-                  <label className="block font-semibold text-stone-600 mb-1">🇬🇧 English Description *</label>
+                  <label className="block font-semibold text-theme-muted mb-1">🇬🇧 English Description *</label>
                   <textarea
                     rows={2}
                     required
                     value={prodDescs.en}
                     onChange={(e) => setProdDescs({ ...prodDescs, en: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-white border-2 border-stone-300 rounded-lg text-black font-semibold placeholder:text-stone-500"
+                    className="w-full px-3 py-1.5 bg-theme-surface border-2 border-theme-border rounded-lg text-theme-text font-semibold placeholder:text-theme-muted"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-stone-600 mb-1">🇰🇪 Kiswahili Description</label>
+                  <label className="block font-semibold text-theme-muted mb-1">🇰🇪 Kiswahili Description</label>
                   <textarea
                     rows={2}
                     value={prodDescs.sw}
                     onChange={(e) => setProdDescs({ ...prodDescs, sw: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-white border-2 border-stone-300 rounded-lg text-black font-semibold placeholder:text-stone-500"
+                    className="w-full px-3 py-1.5 bg-theme-surface border-2 border-theme-border rounded-lg text-theme-text font-semibold placeholder:text-theme-muted"
                   />
                 </div>
               </div>
@@ -862,13 +862,13 @@ export const AdminDashboard: React.FC<{ onNavigateHome: () => void }> = ({ onNav
                 <button
                   type="button"
                   onClick={() => setProductModalOpen(false)}
-                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 rounded-xl font-bold"
+                  className="px-4 py-2 bg-theme-elevated hover:bg-theme-surface border-2 border-theme-border rounded-xl font-bold text-theme-text cursor-pointer"
                 >
                   {t.common.cancel}
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold shadow-xs cursor-pointer"
+                  className="px-6 py-2 bg-theme-accent hover:opacity-90 text-theme-accent-text rounded-xl font-bold shadow-xs cursor-pointer border-2 border-theme-border"
                 >
                   {t.admin.saveChanges}
                 </button>

@@ -1,33 +1,171 @@
 @import "tailwindcss";
 
-:root {
-  --bg-main: #fffdf0;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #fef3c7;
-  --border-color: #e5e7eb;
-  --text-main: #111827;
-  --text-muted: #4b5563;
-  --accent: #d97706;
+@theme {
+  --color-theme-bg: var(--theme-bg);
+  --color-theme-surface: var(--theme-surface);
+  --color-theme-elevated: var(--theme-elevated);
+  --color-theme-text: var(--theme-text);
+  --color-theme-muted: var(--theme-muted);
+  --color-theme-border: var(--theme-border);
+  --color-theme-accent: var(--theme-accent);
+  --color-theme-accent-hover: var(--theme-accent-hover);
+  --color-theme-accent-text: var(--theme-accent-text);
 }
 
-/* Universal crisp black, high-contrast input styling for all text inputs */
+:root {
+  --theme-bg: #faf7f2;
+  --theme-surface: #ffffff;
+  --theme-elevated: #f4ede4;
+  --theme-text: #1c1917;
+  --theme-muted: #57534e;
+  --theme-border: #e2ddd5;
+  --theme-accent: #b45309;
+  --theme-accent-hover: #92400e;
+  --theme-accent-text: #ffffff;
+  --bg-main: var(--theme-bg);
+  --text-main: var(--theme-text);
+}
+
+/* 1. Automatic Bright Mode (Daylight Adaptive) */
+html.theme-bright-auto,
+html:not([class*="theme-"]) {
+  --theme-bg: #faf7f2;
+  --theme-surface: #ffffff;
+  --theme-elevated: #f4ede4;
+  --theme-text: #1c1917;
+  --theme-muted: #57534e;
+  --theme-border: #e2ddd5;
+  --theme-accent: #b45309;
+  --theme-accent-hover: #92400e;
+  --theme-accent-text: #ffffff;
+  --bg-main: var(--theme-bg);
+  --text-main: var(--theme-text);
+}
+
+/* 2. Savannah Sunlit Amber Mode - Warm yellow backgrounds */
+html.theme-bright-solar {
+  --theme-bg: #fef08a;              /* warm golden yellow background */
+  --theme-surface: #fffbeb;         /* warm yellow-amber card surface */
+  --theme-elevated: #fde047;        /* deeper yellow for badges */
+  --theme-text: #451a03;            /* deep warm amber-950 text - excellent contrast on yellow */
+  --theme-muted: #78350f;           /* amber-900 readable muted text */
+  --theme-border: #eab308;          /* golden yellow border */
+  --theme-accent: #d97706;          /* rich amber accent */
+  --theme-accent-hover: #b45309;
+  --theme-accent-text: #ffffff;
+}
+
+/* 3. Clean Daylight Slate - Cool slate backgrounds and teal accents */
+html.theme-light-clean {
+  --theme-bg: #e2e8f0;              /* cool slate-200 background */
+  --theme-surface: #ffffff;         /* crisp clean white card surface */
+  --theme-elevated: #cbd5e1;        /* slate-300 sub-card elevation */
+  --theme-text: #0f172a;            /* deep slate-900 text */
+  --theme-muted: #334155;           /* slate-700 readable muted text */
+  --theme-border: #94a3b8;          /* slate-400 crisp border */
+  --theme-accent: #0f766e;          /* teal-700 accent */
+  --theme-accent-hover: #115e59;
+  --theme-accent-text: #ffffff;
+}
+
+/* 4. Modern Dark Theme - Clean, sleek, modern dark storefront */
+html.theme-dark,
+html.dark,
+html.theme-bright-high-contrast {
+  --theme-bg: #0b0f19;              /* deep rich dark slate background */
+  --theme-surface: #151c2c;         /* elegant dark slate surface */
+  --theme-elevated: #1e293b;        /* elevated card / header surface */
+  --theme-text: #f8fafc;            /* brilliant crisp white text - maximum readability */
+  --theme-muted: #cbd5e1;           /* slate-300 light readable secondary text */
+  --theme-border: #334155;          /* slate-700 crisp borders */
+  --theme-accent: #f59e0b;          /* glowing amber accent */
+  --theme-accent-hover: #fbbf24;    /* brighter amber on hover */
+  --theme-accent-text: #0b0f19;     /* high-contrast dark text on bright amber */
+  --bg-main: var(--theme-bg);
+  --text-main: var(--theme-text);
+  color-scheme: dark;
+}
+
+html.theme-dark body,
+html.dark body,
+html.theme-bright-high-contrast body {
+  background-color: #0b0f19 !important;
+  color: #f8fafc !important;
+}
+
+/* 5. Sight-Assist Large Print - 125% base font size and larger buttons */
+html.theme-bright-large-print {
+  font-size: 125% !important;
+  --theme-bg: #e0f2fe;              /* clear sky-100 light blue background */
+  --theme-surface: #ffffff;         /* crisp white cards */
+  --theme-elevated: #bae6fd;        /* sky-200 elevated badges */
+  --theme-text: #082f49;            /* deep sky-950 high contrast text */
+  --theme-muted: #0369a1;           /* sky-700 high legibility muted text */
+  --theme-border: #0284c7;          /* sky-600 clear borders */
+  --theme-accent: #0284c7;          /* sky-600 */
+  --theme-accent-hover: #0369a1;
+  --theme-accent-text: #ffffff;
+}
+
+html.theme-bright-large-print button,
+html.theme-bright-large-print .btn {
+  padding-top: 0.65rem !important;
+  padding-bottom: 0.65rem !important;
+  font-weight: 700 !important;
+}
+
+/* Global body styling */
+body {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Universal crisp input styling adapting to current theme */
 input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important;
-  background-color: #ffffff !important;
+  color: var(--theme-text) !important;
+  -webkit-text-fill-color: var(--theme-text) !important;
+  background-color: var(--theme-surface) !important;
   font-weight: 600 !important;
+  border-color: var(--theme-border) !important;
+}
+
+html.dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+html.dark textarea,
+html.dark select,
+html.theme-dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+html.theme-dark textarea,
+html.theme-dark select,
+html.theme-bright-high-contrast input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+html.theme-bright-high-contrast textarea,
+html.theme-bright-high-contrast select {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #64748b !important;
-  -webkit-text-fill-color: #64748b !important;
-  opacity: 1 !important;
+  color: var(--theme-muted) !important;
+  -webkit-text-fill-color: var(--theme-muted) !important;
+  opacity: 0.85 !important;
 }
 
-/* Ensure autofill maintains black font and white background */
+html.dark input::placeholder,
+html.dark textarea::placeholder,
+html.theme-dark input::placeholder,
+html.theme-dark textarea::placeholder,
+html.theme-bright-high-contrast input::placeholder,
+html.theme-bright-high-contrast textarea::placeholder {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+  opacity: 0.9 !important;
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus,
@@ -37,138 +175,16 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-  -webkit-text-fill-color: #000000 !important;
-  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* ACCESSIBLE BRIGHT THEMES (Dark themes removed for sight accessibility) */
-
-/* 1. Automatic Bright Mode */
-html.theme-bright-auto,
-html:not([class*="theme-"]) {
-  --bg-main: #fffdf0;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #fef9c3;
-  --border-color: #fde047;
-  --text-main: #1c1917;
-  --text-muted: #57534e;
-  --accent: #d97706;
-}
-
-/* 2. High-Contrast Sight Accessibility Mode (Maximum Contrast: Jet Black & Pure White) */
-html.theme-bright-high-contrast {
-  --bg-main: #ffffff;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #fef08a;
-  --border-color: #000000;
-  --text-main: #000000;
-  --text-muted: #1f2937;
-  --accent: #b45309;
-}
-
-html.theme-bright-high-contrast body {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-}
-
-html.theme-bright-high-contrast button,
-html.theme-bright-high-contrast a,
-html.theme-bright-high-contrast input,
-html.theme-bright-high-contrast select {
-  outline-color: #000000 !important;
-  border-width: 2px !important;
-}
-
-/* 3. Savannah Sunlit Amber Mode */
-html.theme-bright-solar {
-  --bg-main: #fffbeb;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #fef3c7;
-  --border-color: #fde68a;
-  --text-main: #1c1917;
-  --text-muted: #57534e;
-  --accent: #d97706;
-}
-
-/* 4. Clean Daylight Slate */
-html.theme-light-clean {
-  --bg-main: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #f1f5f9;
-  --border-color: #cbd5e1;
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  --accent: #059669;
-}
-
-/* 5. Sight-Assist Large Print Bright */
-html.theme-bright-large-print {
-  --bg-main: #ffffff;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #e0f2fe;
-  --border-color: #38bdf8;
-  --text-main: #0c4a6e;
-  --text-muted: #0369a1;
-  --accent: #0284c7;
-  font-size: 105%;
-}
-
-/* Global bright rendering overrides for all components */
-body {
-  background-color: var(--bg-main);
-  color: var(--text-main);
-  min-height: 100vh;
-  transition: background-color 0.25s ease, color 0.25s ease;
-}
-
-/* Make dark container utilities render as clean, accessible bright surfaces */
-.bg-stone-950,
-.bg-stone-900,
-.bg-stone-900\/90,
-.bg-stone-900\/80,
-.bg-stone-900\/60 {
-  background-color: #ffffff !important;
-  color: #1c1917 !important;
-  border-color: #e4e4e7 !important;
-}
-
-.border-stone-800,
-.border-stone-800\/80,
-.border-stone-800\/60,
-.border-stone-700 {
-  border-color: #e4e4e7 !important;
-}
-
-.text-white,
-.text-stone-100,
-.text-stone-200 {
-  color: #18181b !important;
-}
-
-.text-stone-300,
-.text-stone-400 {
-  color: #52525b !important;
-}
-
-header {
-  background-color: #ffffff !important;
-  border-color: #e4e4e7 !important;
-}
-
-footer {
-  background-color: #fafaf9 !important;
-  border-color: #e4e4e7 !important;
-  color: #27272a !important;
-}
-
-/* Sight Accessibility Enhancements */
+/* Sight Accessibility Focus Ring */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid #d97706 !important;
+  outline: 3px solid var(--theme-accent) !important;
   outline-offset: 2px !important;
 }
 
@@ -178,13 +194,13 @@ textarea:focus-visible {
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #f5f5f4;
+  background: var(--theme-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: #d6d3d1;
+  background: var(--theme-border);
   border-radius: 5px;
-  border: 2px solid #f5f5f4;
+  border: 2px solid var(--theme-bg);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a29e;
+  background: var(--theme-muted);
 }

@@ -22,27 +22,27 @@ export const ContrastSelector: React.FC<{ compact?: boolean }> = ({ compact = fa
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-stone-950 border-2 border-stone-300 hover:border-amber-500 transition cursor-pointer shadow-xs"
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-theme-surface text-theme-text border-2 border-theme-border hover:border-theme-accent transition cursor-pointer shadow-xs"
         aria-expanded={isOpen}
         title="Change Contrast & Theme / Badilisha Mandhari"
       >
         <div
-          className="w-3.5 h-3.5 rounded-full border border-stone-400 shrink-0"
+          className="w-3.5 h-3.5 rounded-full border-2 border-theme-border shrink-0"
           style={{ backgroundColor: currentThemeOption.bgHex }}
         ></div>
         {!compact && (
-          <span className="hidden sm:inline font-bold text-black">
+          <span className="hidden sm:inline font-bold text-theme-text">
             {currentThemeOption.badge}
           </span>
         )}
-        <SunMoon className="w-3.5 h-3.5 text-amber-500" />
+        <SunMoon className="w-3.5 h-3.5 text-theme-accent" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 rounded-2xl shadow-2xl bg-white border-2 border-stone-200 divide-y divide-stone-100 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-stone-900">
-          <div className="px-3.5 py-2.5 bg-stone-50 rounded-t-2xl">
-            <p className="text-[11px] font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
-              <Palette className="w-3.5 h-3.5 text-amber-500" />
+        <div className="absolute right-0 mt-2 w-72 rounded-2xl shadow-2xl bg-theme-surface border-2 border-theme-border divide-y divide-theme-border z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-theme-text">
+          <div className="px-3.5 py-2.5 bg-theme-elevated rounded-t-2xl">
+            <p className="text-[11px] font-bold text-theme-text uppercase tracking-wider flex items-center gap-1.5">
+              <Palette className="w-3.5 h-3.5 text-theme-accent" />
               Theme & Contrast Modes
             </p>
           </div>
@@ -56,25 +56,25 @@ export const ContrastSelector: React.FC<{ compact?: boolean }> = ({ compact = fa
                     setContrastTheme(opt.id);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs text-left transition hover:bg-stone-50 cursor-pointer ${
-                    isSelected ? 'bg-amber-50/80 font-bold border-l-4 border-amber-500 text-stone-950' : 'text-stone-700'
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs text-left transition hover:bg-theme-elevated cursor-pointer ${
+                    isSelected ? 'bg-theme-elevated font-black border-l-4 border-theme-accent text-theme-text' : 'text-theme-muted'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <div
-                      className="w-4 h-4 rounded-full border border-stone-400 shrink-0 shadow-xs"
+                      className="w-4 h-4 rounded-full border-2 shrink-0 shadow-xs"
                       style={{ backgroundColor: opt.bgHex, borderColor: opt.accentHex }}
                     />
                     <div>
-                      <div className="font-bold text-stone-900 flex items-center gap-1.5">
+                      <div className="font-bold text-theme-text flex items-center gap-1.5">
                         <span>{opt.name}</span>
                         {opt.id === 'bright-auto' && (
-                          <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-amber-200 text-amber-900 font-extrabold">
+                          <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-theme-elevated text-theme-accent font-extrabold border border-theme-border">
                             Auto
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-stone-500">{opt.description}</div>
+                      <div className="text-[10px] text-theme-muted">{opt.description}</div>
                     </div>
                   </div>
                   {isSelected && <Check className="w-4 h-4 text-emerald-600 shrink-0" />}

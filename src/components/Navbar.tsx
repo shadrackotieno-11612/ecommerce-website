@@ -66,30 +66,30 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-stone-200 text-stone-900 transition-all shadow-xs">
+    <header className="sticky top-0 z-40 bg-theme-surface/95 backdrop-blur-md border-b-2 border-theme-border text-theme-text transition-all shadow-xs">
       {/* Top Banner with Delivery & Support */}
-      <div className="bg-amber-50 text-stone-800 text-xs py-1.5 px-4 border-b border-amber-200/80">
+      <div className="bg-theme-elevated text-theme-text text-xs py-1.5 px-4 border-b border-theme-border">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-amber-950 font-black flex items-center gap-1.5">
+            <span className="font-black flex items-center gap-1.5">
               <span>🚚</span>
               <span>Nairobi Same-Day & 47 Counties Express Courier</span>
             </span>
           </div>
-          <div className="flex items-center gap-4 text-stone-700 text-xs font-semibold">
+          <div className="flex items-center gap-4 text-theme-muted text-xs font-semibold">
             <button
               onClick={onOpenChatbot}
-              className="text-amber-800 hover:text-amber-900 font-black flex items-center gap-1 cursor-pointer transition"
+              className="text-theme-accent hover:underline font-black flex items-center gap-1 cursor-pointer transition"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <Sparkles className="w-3.5 h-3.5 text-theme-accent" />
               <span>Simba AI Assistance</span>
             </button>
             <span>•</span>
-            <button onClick={onOpenAbout} className="hover:text-black transition cursor-pointer">
+            <button onClick={onOpenAbout} className="hover:text-theme-text transition cursor-pointer">
               {t.nav.aboutUs}
             </button>
             <span>•</span>
-            <button onClick={onOpenContact} className="hover:text-black transition cursor-pointer">
+            <button onClick={onOpenContact} className="hover:text-theme-text transition cursor-pointer">
               {t.nav.contact}
             </button>
           </div>
@@ -114,8 +114,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onNavigate('home')}
                 className={`px-3.5 py-2 rounded-xl text-sm font-bold transition cursor-pointer ${
                   currentPage === 'home'
-                    ? 'text-amber-950 bg-amber-100/90 border-2 border-amber-300'
-                    : 'text-stone-800 hover:text-black hover:bg-stone-100'
+                    ? 'text-theme-accent-text bg-theme-accent border-2 border-theme-border'
+                    : 'text-theme-text hover:bg-theme-elevated'
                 }`}
               >
                 {t.nav.home}
@@ -124,8 +124,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onNavigate('products')}
                 className={`px-3.5 py-2 rounded-xl text-sm font-bold transition cursor-pointer ${
                   currentPage === 'products'
-                    ? 'text-amber-950 bg-amber-100/90 border-2 border-amber-300'
-                    : 'text-stone-800 hover:text-black hover:bg-stone-100'
+                    ? 'text-theme-accent-text bg-theme-accent border-2 border-theme-border'
+                    : 'text-theme-text hover:bg-theme-elevated'
                 }`}
               >
                 {t.nav.products}
@@ -134,8 +134,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onNavigate('services')}
                 className={`px-3.5 py-2 rounded-xl text-sm font-bold transition cursor-pointer ${
                   currentPage === 'services'
-                    ? 'text-amber-950 bg-amber-100/90 border-2 border-amber-300'
-                    : 'text-stone-800 hover:text-black hover:bg-stone-100'
+                    ? 'text-theme-accent-text bg-theme-accent border-2 border-theme-border'
+                    : 'text-theme-text hover:bg-theme-elevated'
                 }`}
               >
                 {t.nav.services}
@@ -151,9 +151,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.common.search}
-                className="w-full pl-9 pr-4 py-2 bg-white border-2 border-stone-300 rounded-full text-xs text-black font-semibold placeholder:text-stone-500 focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition"
+                className="w-full pl-9 pr-4 py-2 bg-theme-surface border-2 border-theme-border rounded-full text-xs text-theme-text font-semibold placeholder:text-theme-muted focus:outline-hidden focus:border-theme-accent focus:ring-2 focus:ring-theme-accent/20 transition"
               />
-              <Search className="w-3.5 h-3.5 text-stone-600 absolute left-3.5 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-theme-muted absolute left-3.5 top-2.5" />
             </form>
           </div>
 
@@ -168,7 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Chatbot Launcher Button */}
             <button
               onClick={onOpenChatbot}
-              className="p-2 text-amber-700 hover:text-amber-800 hover:bg-amber-100/80 rounded-full transition relative cursor-pointer border-2 border-amber-400 bg-amber-50"
+              className="p-2 text-theme-accent hover:bg-theme-elevated rounded-full transition relative cursor-pointer border-2 border-theme-border bg-theme-surface"
               title="Chat with Simba AI Assistant"
             >
               <MessageSquare className="w-4 h-4" />
@@ -184,7 +184,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onNavigate('dashboard');
                 }
               }}
-              className="p-2 text-stone-800 hover:text-rose-600 hover:bg-stone-100 rounded-full transition relative cursor-pointer border border-stone-300"
+              className="p-2 text-theme-text hover:text-rose-600 hover:bg-theme-elevated rounded-full transition relative cursor-pointer border-2 border-theme-border bg-theme-surface"
               title={t.nav.wishlist}
             >
               <Heart className="w-4 h-4" />
@@ -198,13 +198,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Shopping Cart Button */}
             <button
               onClick={() => setCartDrawerOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 rounded-full font-bold text-xs transition relative cursor-pointer border-2 border-emerald-500"
+              className="flex items-center gap-2 px-3.5 py-2 bg-theme-accent hover:opacity-90 text-theme-accent-text rounded-full font-bold text-xs transition relative cursor-pointer border-2 border-theme-border shadow-xs"
               title={t.nav.cart}
             >
               <div className="relative">
-                <ShoppingBag className="w-4 h-4 text-emerald-700" />
+                <ShoppingBag className="w-4 h-4 text-theme-accent-text" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2.5 min-w-4 h-4 px-1 bg-emerald-700 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
+                  <span className="absolute -top-2 -right-2.5 min-w-4 h-4 px-1 bg-theme-surface text-theme-text border border-theme-border text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
                     {itemCount}
                   </span>
                 )}
@@ -218,24 +218,24 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 p-1.5 pl-3 bg-stone-50 hover:bg-stone-100 border-2 border-stone-300 rounded-full transition cursor-pointer"
+                  className="flex items-center gap-2 p-1.5 pl-3 bg-theme-surface hover:bg-theme-elevated border-2 border-theme-border rounded-full transition cursor-pointer"
                 >
-                  <span className="text-xs font-bold text-stone-900 max-w-[100px] truncate hidden sm:inline">
+                  <span className="text-xs font-bold text-theme-text max-w-[100px] truncate hidden sm:inline">
                     {user.fullName.split(' ')[0]}
                   </span>
-                  <div className="w-7 h-7 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center text-xs font-black uppercase shadow-xs">
+                  <div className="w-7 h-7 rounded-full bg-theme-accent text-theme-accent-text flex items-center justify-center text-xs font-black uppercase shadow-xs">
                     {user.fullName.charAt(0)}
                   </div>
                 </button>
 
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl bg-white border-2 border-stone-200 divide-y divide-stone-100 z-50 animate-in fade-in text-stone-900">
-                    <div className="px-4 py-3 bg-stone-50 rounded-t-2xl">
-                      <p className="text-[11px] font-semibold text-stone-500">Signed in as</p>
-                      <p className="text-sm font-black text-stone-900 truncate">{user.fullName}</p>
-                      <p className="text-xs text-stone-600 truncate">{user.email}</p>
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl bg-theme-surface border-2 border-theme-border divide-y divide-theme-border z-50 animate-in fade-in text-theme-text">
+                    <div className="px-4 py-3 bg-theme-elevated rounded-t-2xl">
+                      <p className="text-[11px] font-semibold text-theme-muted">Signed in as</p>
+                      <p className="text-sm font-black text-theme-text truncate">{user.fullName}</p>
+                      <p className="text-xs text-theme-muted truncate">{user.email}</p>
                       {user.role === 'admin' && (
-                        <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-black bg-amber-200 text-amber-950 border border-amber-400">
+                        <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-black bg-theme-accent text-theme-accent-text border border-theme-border">
                           Administrator
                         </span>
                       )}
@@ -246,9 +246,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                           onNavigate('dashboard');
                           setUserMenuOpen(false);
                         }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-stone-50 cursor-pointer"
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-theme-text hover:bg-theme-elevated cursor-pointer"
                       >
-                        <UserIcon className="w-3.5 h-3.5 text-stone-500" />
+                        <UserIcon className="w-3.5 h-3.5 text-theme-muted" />
                         {t.nav.dashboard}
                       </button>
                       <button
@@ -256,9 +256,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                           onNavigate('dashboard');
                           setUserMenuOpen(false);
                         }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-stone-50 cursor-pointer"
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-theme-text hover:bg-theme-elevated cursor-pointer"
                       >
-                        <Package className="w-3.5 h-3.5 text-stone-500" />
+                        <Package className="w-3.5 h-3.5 text-theme-muted" />
                         {t.orders.title}
                       </button>
                       {user.role === 'admin' && (
@@ -267,9 +267,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                             onNavigate('admin');
                             setUserMenuOpen(false);
                           }}
-                          className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-amber-950 bg-amber-50 hover:bg-amber-100 cursor-pointer"
+                          className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-theme-accent hover:bg-theme-elevated cursor-pointer"
                         >
-                          <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                          <ShieldCheck className="w-3.5 h-3.5 text-theme-accent" />
                           {t.nav.adminDashboard}
                         </button>
                       )}
@@ -281,7 +281,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setUserMenuOpen(false);
                           onNavigate('home');
                         }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 cursor-pointer"
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-theme-elevated cursor-pointer"
                       >
                         <LogOut className="w-3.5 h-3.5 text-rose-600" />
                         {t.nav.logout}
@@ -294,13 +294,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => openAuthModal('login')}
-                  className="px-3.5 py-1.5 text-xs font-bold text-stone-800 hover:text-black rounded-full hover:bg-stone-100 border border-stone-300 transition cursor-pointer"
+                  className="px-3.5 py-1.5 text-xs font-bold text-theme-text hover:bg-theme-elevated rounded-full border-2 border-theme-border transition cursor-pointer"
                 >
                   {t.nav.login}
                 </button>
                 <button
                   onClick={() => openAuthModal('register')}
-                  className="px-4 py-1.5 text-xs font-black text-stone-950 bg-amber-400 hover:bg-amber-300 rounded-full shadow-xs transition cursor-pointer hidden sm:inline-block"
+                  className="px-4 py-1.5 text-xs font-black text-theme-accent-text bg-theme-accent hover:opacity-90 rounded-full shadow-xs transition cursor-pointer hidden sm:inline-block border-2 border-theme-border"
                 >
                   {t.nav.register}
                 </button>
@@ -310,7 +310,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg text-stone-800 hover:bg-stone-100 border border-stone-300 transition cursor-pointer"
+              className="lg:hidden p-2 rounded-lg text-theme-text hover:bg-theme-elevated border-2 border-theme-border transition cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -325,21 +325,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.common.search}
-              className="w-full pl-9 pr-4 py-2 bg-white border-2 border-stone-300 rounded-full text-xs text-black font-semibold placeholder:text-stone-500 focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+              className="w-full pl-9 pr-4 py-2 bg-theme-surface border-2 border-theme-border rounded-full text-xs text-theme-text font-semibold placeholder:text-theme-muted focus:outline-hidden focus:border-theme-accent focus:ring-2 focus:ring-theme-accent/20"
             />
-            <Search className="w-3.5 h-3.5 text-stone-600 absolute left-3 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-theme-muted absolute left-3 top-2.5" />
           </form>
         </div>
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-3 border-t border-stone-800 space-y-1">
+          <div className="lg:hidden py-3 border-t-2 border-theme-border space-y-1">
             <button
               onClick={() => {
                 onNavigate('home');
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg font-medium text-stone-200 hover:bg-stone-900"
+              className="w-full text-left px-3 py-2 rounded-lg font-bold text-theme-text hover:bg-theme-elevated"
             >
               {t.nav.home}
             </button>
@@ -348,7 +348,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onNavigate('products');
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg font-medium text-stone-200 hover:bg-stone-900"
+              className="w-full text-left px-3 py-2 rounded-lg font-bold text-theme-text hover:bg-theme-elevated"
             >
               {t.nav.products}
             </button>
@@ -357,7 +357,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onNavigate('services');
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg font-medium text-stone-200 hover:bg-stone-900"
+              className="w-full text-left px-3 py-2 rounded-lg font-bold text-theme-text hover:bg-theme-elevated"
             >
               {t.nav.services}
             </button>
@@ -366,7 +366,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onOpenChatbot();
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 flex items-center gap-2"
+              className="w-full text-left px-3 py-2 rounded-lg font-bold text-theme-accent bg-theme-elevated border-2 border-theme-border flex items-center gap-2"
             >
               <Sparkles className="w-4 h-4" />
               <span>🦁 Simba AI Chatbot Assistance</span>
@@ -376,7 +376,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onOpenAbout();
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg font-medium text-stone-200 hover:bg-stone-900"
+              className="w-full text-left px-3 py-2 rounded-lg font-bold text-theme-text hover:bg-theme-elevated"
             >
               {t.nav.aboutUs}
             </button>
@@ -385,7 +385,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onOpenContact();
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg font-medium text-stone-200 hover:bg-stone-900"
+              className="w-full text-left px-3 py-2 rounded-lg font-bold text-theme-text hover:bg-theme-elevated"
             >
               {t.nav.contact}
             </button>
@@ -396,7 +396,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onNavigate('admin');
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded-lg font-bold text-amber-300 bg-amber-950/60"
+                className="w-full text-left px-3 py-2 rounded-lg font-bold text-theme-accent bg-theme-elevated border border-theme-border"
               >
                 {t.nav.adminDashboard}
               </button>

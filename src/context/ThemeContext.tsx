@@ -2,10 +2,11 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type ContrastTheme = 
   | 'bright-auto'            // Automatic Bright Theme (Daylight Adaptive - Default)
-  | 'bright-high-contrast'   // Ultra High-Contrast Bright (Pure White, Bold Black Text & Borders for Sight Accessibility)
+  | 'dark'                   // Modern Dark Theme (Clean, modern dark theme appearance)
   | 'bright-solar'           // Savannah Sunlit Amber Mode (Warm anti-glare sunlight)
   | 'light-clean'            // Clean Daylight Mode (Crisp Cool Slate)
-  | 'bright-large-print';    // Sight-Assist Large Print Bright Mode (Enhanced scale & clarity)
+  | 'bright-large-print'     // Sight-Assist Large Print Bright Mode (Enhanced scale & clarity)
+  | 'bright-high-contrast';  // Backward-compatible alias for Dark Theme
 
 export interface ThemeOption {
   id: ContrastTheme;
@@ -21,41 +22,41 @@ export const THEME_OPTIONS: ThemeOption[] = [
     id: 'bright-auto',
     name: 'Automatic Bright Mode',
     badge: 'Auto Bright',
-    bgHex: '#fffdf0',
-    accentHex: '#d97706',
-    description: 'Daylight-optimized bright theme with clear contrast for effortless reading.',
+    bgHex: '#faf7f2',
+    accentHex: '#b45309',
+    description: 'Daylight-optimized natural bright theme with clean contrast for effortless reading.',
   },
   {
-    id: 'bright-high-contrast',
-    name: 'High-Contrast Sight Accessibility',
-    badge: 'High Contrast',
-    bgHex: '#ffffff',
-    accentHex: '#b45309',
-    description: 'Designed for clients with sight problems: solid black text, pure white background, and bold visible borders.',
+    id: 'dark',
+    name: 'Modern Dark Theme',
+    badge: 'Dark Theme',
+    bgHex: '#0b0f19',
+    accentHex: '#f59e0b',
+    description: 'Clean, modern dark-theme appearance with high-contrast text, sleek slate surfaces, and vibrant amber accents.',
   },
   {
     id: 'bright-solar',
     name: 'Savannah Sunlit Amber',
     badge: 'Sunlit Amber',
-    bgHex: '#fffbeb',
+    bgHex: '#fef08a',
     accentHex: '#d97706',
-    description: 'Warm luminous sunlight background with golden highlights and soft anti-glare contrast.',
+    description: 'Warm luminous yellow background with golden surfaces and amber highlights.',
   },
   {
     id: 'light-clean',
     name: 'Clean Daylight Slate',
-    badge: 'Crisp Light',
-    bgHex: '#f8fafc',
-    accentHex: '#059669',
-    description: 'Cool crisp white daylight background with deep slate typography.',
+    badge: 'Cool Slate',
+    bgHex: '#e2e8f0',
+    accentHex: '#0f766e',
+    description: 'Cool crisp slate background with pure white surfaces and deep teal highlights.',
   },
   {
     id: 'bright-large-print',
     name: 'Sight-Assist Large Print',
-    badge: 'Sight Assist',
-    bgHex: '#ffffff',
+    badge: 'Large Print',
+    bgHex: '#e0f2fe',
     accentHex: '#0284c7',
-    description: 'Enlarged high-visibility typography and pronounced outlines for low-vision accessibility.',
+    description: 'Enlarged 125% typography, larger buttons, and sky blue accents for low-vision clarity.',
   },
 ];
 
@@ -69,13 +70,16 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
-const THEME_STORAGE_KEY = 'jitu_contrast_theme';
+const THEME_STORAGE_KEY = 'zawadi_theme_preference';
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [contrastTheme, setContrastThemeState] = useState<ContrastTheme>(() => {
     try {
-      const stored = localStorage.getItem(THEME_STORAGE_KEY) as ContrastTheme | null;
-      // If stored value is one of our accessible bright themes, keep it; otherwise reset to bright-auto
+      const stored = (localStorage.getItem(THEME_STORAGE_KEY) ||
+        localStorage.getItem('jitu_contrast_theme')) as ContrastTheme | null;
+      if (stored === 'bright-high-contrast') {
+        return 'dark';
+      }
       if (stored && THEME_OPTIONS.some((t) => t.id === stored)) {
         return stored;
       }
@@ -86,19 +90,23 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const setContrastTheme = (theme: ContrastTheme) => {
-    setContrastThemeState(theme);
+    const resolved = theme === 'bright-high-contrast' ? 'dark' : theme;
+    setContrastThemeState(resolved);
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      localStorage.setItem(THEME_STORAGE_KEY, resolved);
     } catch (e) {
       console.warn('Failed to save theme preference:', e);
     }
   };
 
+  const isDark = contrastTheme === 'dark' || contrastTheme === 'bright-high-contrast';
+
   useEffect(() => {
     const root = document.documentElement;
-    // Remove all previous themes and dark class
+    // Remove all previous themes
     root.classList.remove(
       'dark',
+      'theme-dark',
       'theme-dark-obsidian',
       'theme-dark-high-contrast',
       'theme-dark-midnight',
@@ -110,27 +118,25 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       'theme-bright-large-print'
     );
 
-    // Apply the active accessible bright theme
-    root.classList.add(`theme-${contrastTheme}`);
-
-    // Never add 'dark' class - this is exclusively an accessible bright storefront
-    root.classList.remove('dark');
-
-    // Set background color directly on body for seamless instant rendering
-    const opt = THEME_OPTIONS.find((t) => t.id === contrastTheme) || THEME_OPTIONS[0];
-    document.body.style.backgroundColor = opt.bgHex;
-  }, [contrastTheme]);
+    if (isDark) {
+      root.classList.add('dark', 'theme-dark');
+      document.body.style.backgroundColor = '#0b0f19';
+    } else {
+      root.classList.remove('dark');
+      root.classList.add(`theme-${contrastTheme}`);
+      const opt = THEME_OPTIONS.find((t) => t.id === contrastTheme) || THEME_OPTIONS[0];
+      document.body.style.backgroundColor = opt.bgHex;
+    }
+  }, [contrastTheme, isDark]);
 
   const currentThemeOption =
-    THEME_OPTIONS.find((t) => t.id === contrastTheme) || THEME_OPTIONS[0];
-
-  // Store is always bright and accessible
-  const isDark = false;
+    THEME_OPTIONS.find((t) => t.id === contrastTheme) ||
+    (contrastTheme === 'bright-high-contrast' ? THEME_OPTIONS[1] : THEME_OPTIONS[0]);
 
   return (
     <ThemeContext.Provider
       value={{
-        contrastTheme,
+        contrastTheme: contrastTheme === 'bright-high-contrast' ? 'dark' : contrastTheme,
         setContrastTheme,
         isDark,
         themeOptions: THEME_OPTIONS,

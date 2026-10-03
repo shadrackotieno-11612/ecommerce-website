@@ -43,15 +43,22 @@ export class MpesaService {
 
   private static getCredentials() {
     return {
-      consumerKey: process.env.MPESA_CONSUMER_KEY || '',
-      consumerSecret: process.env.MPESA_CONSUMER_SECRET || '',
-      shortcode: process.env.MPESA_SHORTCODE || '174379',
+      consumerKey:
+        process.env.MPESA_CONSUMER_KEY ||
+        'FLpBBgtYYHPGeZtACflsAjdgvE2opccCo4m505YVp0AudTWQ',
+      consumerSecret:
+        process.env.MPESA_CONSUMER_SECRET ||
+        'CwF6rFvsC43RGUEdRG38E7ciIZjKe00sJY1CKdRVyzJHAwoe0RSH1YmHDPYALd6Y',
+      shortcode:
+        process.env.MPESA_BUSINESS_SHORTCODE ||
+        process.env.MPESA_SHORTCODE ||
+        '174379',
       passkey:
         process.env.MPESA_PASSKEY ||
         'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',
       callbackUrl:
         process.env.MPESA_CALLBACK_URL ||
-        'https://yourdomain.com/api/mpesa/callback',
+        `${process.env.APP_URL || 'https://ais-dev-3rtjq4uorvdf6matyxc6o4-191761686704.europe-west2.run.app'}/api/mpesa/callback`,
       environment: this.getEnvironment(),
     };
   }
@@ -179,11 +186,14 @@ export class MpesaService {
       const { token: accessToken, error: tokenError } = await this.getAccessToken();
 
       if (!accessToken) {
-        return {
-          success: false,
-          error: tokenError || 'Failed to authenticate with Safaricom Daraja OAuth service.',
-        };
-      }
+        if (isProduction) {
+          return {
+            success: false,
+            error: tokenError || 'Failed to authenticate with Safaricom Daraja OAuth service.',
+          };
+        }
+        console.warn(`[M-Pesa] Daraja OAuth failed (${tokenError}). Falling back to sandbox simulator in development.`);
+      } else {
 
       try {
         const payload = {
@@ -255,6 +265,7 @@ export class MpesaService {
         };
       }
     }
+  }
 
     // If MPESA_CONSUMER_KEY is empty:
     // Only allow fake simulated mode when MPESA_CONSUMER_KEY is empty AND NODE_ENV is not production

@@ -91,12 +91,12 @@ export const LionLogo: React.FC<LionLogoProps> = ({
         <div className="flex flex-col text-left">
           <div className="flex items-center leading-none">
             <span
-              className={`font-black tracking-tight text-stone-950 font-['Outfit',sans-serif] ${titleClass} group-hover:text-amber-600 transition-colors`}
+              className={`font-black tracking-tight text-theme-text font-['Outfit',sans-serif] ${titleClass} group-hover:text-theme-accent transition-colors`}
             >
-              ZAWADI <span className="text-amber-600">KENYA</span>
+              ZAWADI <span className="text-theme-accent">KENYA</span>
             </span>
           </div>
-          <span className={`text-stone-600 font-bold tracking-wide uppercase ${subClass} mt-0.5`}>
+          <span className={`text-theme-muted font-bold tracking-wide uppercase ${subClass} mt-0.5`}>
             Authentic Goods & Services
           </span>
         </div>

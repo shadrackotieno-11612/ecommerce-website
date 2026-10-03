@@ -35,10 +35,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
   return (
     <div
       onClick={() => onSelectProduct?.(product)}
-      className="group bg-white rounded-2xl border-2 border-stone-200 hover:border-amber-400 shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col cursor-pointer text-stone-900"
+      className="group bg-theme-surface rounded-2xl border-2 border-theme-border hover:border-theme-accent shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col cursor-pointer text-theme-text"
     >
       {/* Product Image Container */}
-      <div className="relative aspect-square bg-stone-100 overflow-hidden">
+      <div className="relative aspect-square bg-theme-elevated overflow-hidden">
         <img
           src={product.images[0] || 'https://images.unsplash.com/photo-1587734195503-904fca47e0e9?auto=format&fit=crop&w=800&q=80'}
           alt={localizedName}
@@ -47,8 +47,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
         />
 
         {/* Origin Badge */}
-        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-stone-900 text-[11px] font-bold flex items-center gap-1 border border-stone-300 shadow-xs">
-          <MapPin className="w-3 h-3 text-amber-600" />
+        <div className="absolute top-3 left-3 bg-theme-surface/95 backdrop-blur-md px-2.5 py-1 rounded-full text-theme-text text-[11px] font-bold flex items-center gap-1 border border-theme-border shadow-xs">
+          <MapPin className="w-3 h-3 text-theme-accent" />
           <span className="truncate max-w-[120px]">{product.origin}</span>
         </div>
 
@@ -58,7 +58,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
           className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition cursor-pointer shadow-md border ${
             isFavorited
               ? 'bg-rose-600 text-white border-rose-700'
-              : 'bg-white/90 text-stone-700 hover:text-rose-600 border-stone-300 hover:bg-white'
+              : 'bg-theme-surface/90 text-theme-text hover:text-rose-600 border-theme-border hover:bg-theme-surface'
           }`}
           title={isFavorited ? t.products.removedFromWishlist : t.products.addedToWishlist}
         >
@@ -67,8 +67,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
 
         {/* Stock / Discount Badges */}
         <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
-          {product.discountPrice && (
-            <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs border border-amber-600">
+          {product.discountPrice && product.discountPrice < product.price && (
+            <span className="bg-theme-accent text-theme-accent-text text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs border border-theme-border">
               Sale
             </span>
           )}
@@ -88,8 +88,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
           {/* Rating & Review Count */}
-          <div className="flex items-center gap-1.5 mb-1.5 text-xs text-stone-600 font-semibold">
-            <div className="flex items-center text-amber-600 font-bold">
+          <div className="flex items-center gap-1.5 mb-1.5 text-xs text-theme-muted font-semibold">
+            <div className="flex items-center text-amber-500 font-bold">
               <Star className="w-3.5 h-3.5 fill-current mr-0.5" />
               <span>{product.rating.toFixed(1)}</span>
             </div>
@@ -98,34 +98,34 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
             {product.weight && (
               <>
                 <span>•</span>
-                <span className="text-stone-700 font-bold">{product.weight}</span>
+                <span className="text-theme-text font-bold">{product.weight}</span>
               </>
             )}
           </div>
 
           {/* Title */}
-          <h3 className="font-black text-stone-950 group-hover:text-amber-700 transition line-clamp-1 text-sm sm:text-base leading-snug">
+          <h3 className="font-black text-theme-text group-hover:text-theme-accent transition line-clamp-1 text-sm sm:text-base leading-snug">
             {localizedName}
           </h3>
 
           {/* Short Description */}
-          <p className="text-stone-600 text-xs line-clamp-2 mt-1 leading-relaxed font-medium">
+          <p className="text-theme-muted text-xs line-clamp-2 mt-1 leading-relaxed font-medium">
             {localizedDesc}
           </p>
         </div>
 
         {/* Pricing and Add to Cart Button */}
-        <div className="mt-4 pt-3 border-t-2 border-stone-100 flex items-center justify-between">
+        <div className="mt-4 pt-3 border-t-2 border-theme-border flex items-center justify-between">
           <div>
-            <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">
+            <div className="text-[10px] text-theme-muted font-bold uppercase tracking-wider">
               {t.common.currency}
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-base sm:text-lg font-black text-amber-700">
+              <span className="text-base sm:text-lg font-black text-theme-accent">
                 {formatPrice(product.discountPrice || product.price)}
               </span>
-              {product.discountPrice && (
-                <span className="text-xs text-stone-400 font-bold line-through">
+              {product.discountPrice && product.discountPrice < product.price && (
+                <span className="text-xs text-theme-muted font-bold line-through">
                   {formatPrice(product.price)}
                 </span>
               )}
@@ -135,10 +135,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition cursor-pointer shadow-xs ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition cursor-pointer shadow-xs border-2 border-theme-border ${
               isOutOfStock
-                ? 'bg-stone-200 text-stone-500 cursor-not-allowed border border-stone-300'
-                : 'bg-emerald-700 hover:bg-emerald-800 text-white active:scale-95'
+                ? 'bg-theme-elevated text-theme-muted cursor-not-allowed opacity-60'
+                : 'bg-theme-accent hover:opacity-90 text-theme-accent-text active:scale-95'
             }`}
           >
             <ShoppingBag className="w-3.5 h-3.5" />

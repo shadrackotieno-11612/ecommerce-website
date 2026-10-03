@@ -278,21 +278,21 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
         className="fixed inset-0 bg-black/65 backdrop-blur-xs transition-opacity"
       />
 
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-100 z-10 my-8 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-2xl bg-theme-surface rounded-3xl shadow-2xl overflow-hidden border-2 border-theme-border z-10 my-8 animate-in fade-in zoom-in-95 duration-200 text-theme-text">
         {/* Header */}
-        <div className="p-5 sm:p-6 border-b border-stone-200 flex items-center justify-between bg-stone-900 text-white">
+        <div className="p-5 sm:p-6 border-b-2 border-theme-border flex items-center justify-between bg-theme-elevated text-theme-text">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center font-bold text-white shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-theme-accent flex items-center justify-center font-bold text-theme-accent-text shadow-xs">
               M
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold">{t.checkout.title}</h2>
-              <p className="text-xs text-stone-400">{t.checkout.secureBadge}</p>
+              <h2 className="text-base sm:text-lg font-bold text-theme-text">{t.checkout.title}</h2>
+              <p className="text-xs text-theme-muted">{t.checkout.secureBadge}</p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-full text-stone-400 hover:text-white hover:bg-stone-800 transition cursor-pointer"
+            className="p-1.5 rounded-full text-theme-muted hover:text-theme-text hover:bg-theme-surface transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -312,13 +312,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
             <form onSubmit={handleSubmitOrder} className="space-y-5">
               {/* Customer Contact */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
-                  <Smartphone className="w-4 h-4 text-emerald-600" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-theme-text flex items-center gap-1.5">
+                  <Smartphone className="w-4 h-4 text-theme-accent" />
                   {t.checkout.contactInfo}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-stone-800 mb-1">
+                    <label className="block text-xs font-bold text-theme-text mb-1">
                       {t.checkout.fullName} *
                     </label>
                     <input
@@ -327,12 +327,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="e.g. Amina Wanjiku"
-                      className="w-full px-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-sm text-black font-semibold placeholder:text-stone-500 focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      className="w-full px-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-sm text-theme-text font-semibold placeholder:text-theme-muted focus:outline-hidden focus:border-theme-accent focus:ring-2 focus:ring-theme-accent/20"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-stone-800 mb-1">
+                    <label className="block text-xs font-bold text-theme-text mb-1">
                       {t.checkout.phoneNumber} (M-Pesa) *
                     </label>
                     <input
@@ -341,16 +341,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="0712 345 678"
-                      className="w-full px-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-sm text-black font-semibold placeholder:text-stone-500 focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-mono"
+                      className="w-full px-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-sm text-theme-text font-semibold placeholder:text-theme-muted focus:outline-hidden focus:border-theme-accent focus:ring-2 focus:ring-theme-accent/20 font-mono"
                     />
-                    <span className="text-[11px] text-stone-600 mt-1 block">
+                    <span className="text-[11px] text-theme-muted mt-1 block">
                       {t.checkout.phoneHint}
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1">
+                  <label className="block text-xs font-bold text-theme-text mb-1">
                     {t.checkout.email} *
                   </label>
                   <input
@@ -359,25 +359,25 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="amina@example.com"
-                    className="w-full px-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-sm text-black font-semibold placeholder:text-stone-500 focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    className="w-full px-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-sm text-theme-text font-semibold placeholder:text-theme-muted focus:outline-hidden focus:border-theme-accent focus:ring-2 focus:ring-theme-accent/20"
                   />
                 </div>
               </div>
 
               {/* Delivery Details */}
-              <div className="space-y-3 pt-3 border-t border-stone-100">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800">
+              <div className="space-y-3 pt-3 border-t-2 border-theme-border">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-theme-text">
                   {t.checkout.deliveryAddress}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-stone-800 mb-1">
+                    <label className="block text-xs font-bold text-theme-text mb-1">
                       {t.checkout.county} *
                     </label>
                     <select
                       value={county}
                       onChange={(e) => setCounty(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-sm text-black font-semibold focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      className="w-full px-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-sm text-theme-text font-semibold focus:outline-hidden focus:border-theme-accent focus:ring-2 focus:ring-theme-accent/20"
                     >
                       {KENYAN_COUNTIES.map((c) => (
                         <option key={c} value={c} className="text-black">
@@ -387,7 +387,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-stone-800 mb-1">
+                    <label className="block text-xs font-bold text-theme-text mb-1">
                       {t.checkout.town} *
                     </label>
                     <input
@@ -396,13 +396,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
                       value={town}
                       onChange={(e) => setTown(e.target.value)}
                       placeholder="e.g. Westlands / Kilimani"
-                      className="w-full px-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-sm text-black font-semibold placeholder:text-stone-500 focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      className="w-full px-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-sm text-theme-text font-semibold placeholder:text-theme-muted focus:outline-hidden focus:border-theme-accent focus:ring-2 focus:ring-theme-accent/20"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1">
+                  <label className="block text-xs font-bold text-theme-text mb-1">
                     {t.checkout.deliveryAddress} *
                   </label>
                   <input
@@ -411,12 +411,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
                     value={deliveryAddress}
                     onChange={(e) => setDeliveryAddress(e.target.value)}
                     placeholder={t.checkout.deliveryAddressPlaceholder}
-                    className="w-full px-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-sm text-black font-semibold placeholder:text-stone-500 focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    className="w-full px-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-sm text-theme-text font-semibold placeholder:text-theme-muted focus:outline-hidden focus:border-theme-accent focus:ring-2 focus:ring-theme-accent/20"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1">
+                  <label className="block text-xs font-bold text-theme-text mb-1">
                     {t.checkout.orderNotes}
                   </label>
                   <input
@@ -424,32 +424,32 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="e.g. Gate code or special scheduling requirements"
-                    className="w-full px-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-sm text-black font-semibold placeholder:text-stone-500 focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    className="w-full px-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-sm text-theme-text font-semibold placeholder:text-theme-muted focus:outline-hidden focus:border-theme-accent focus:ring-2 focus:ring-theme-accent/20"
                   />
                 </div>
               </div>
 
               {/* Order Summary Box */}
-              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2 text-xs">
-                <div className="flex justify-between text-stone-600">
+              <div className="p-4 rounded-2xl bg-theme-elevated border-2 border-theme-border space-y-2 text-xs">
+                <div className="flex justify-between text-theme-muted">
                   <span>{t.cart.subtotal} ({cartItems.length} items)</span>
-                  <span className="font-semibold text-stone-900">{formatPrice(subtotal)}</span>
+                  <span className="font-semibold text-theme-text">{formatPrice(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-stone-600">
+                <div className="flex justify-between text-theme-muted">
                   <span>{t.cart.deliveryFee}</span>
-                  <span className="font-semibold text-stone-900">
+                  <span className="font-semibold text-theme-text">
                     {deliveryFee === 0 ? t.cart.freeDelivery : formatPrice(deliveryFee)}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm sm:text-base font-extrabold text-stone-900 pt-2 border-t border-stone-200">
+                <div className="flex justify-between text-sm sm:text-base font-extrabold text-theme-text pt-2 border-t-2 border-theme-border">
                   <span>{t.cart.total}</span>
-                  <span className="text-emerald-700">{formatPrice(totalAmount)}</span>
+                  <span className="text-theme-accent">{formatPrice(totalAmount)}</span>
                 </div>
               </div>
 
               {/* M-Pesa STK Notice */}
-              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-900 flex items-start gap-2">
-                <Smartphone className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-xl bg-theme-elevated border-2 border-theme-border text-xs text-theme-text flex items-start gap-2">
+                <Smartphone className="w-4 h-4 text-theme-accent shrink-0 mt-0.5" />
                 <span>{t.checkout.mPesaNotice}</span>
               </div>
 
@@ -457,7 +457,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-base shadow-lg shadow-emerald-900/20 transition flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-70"
+                className="w-full py-4 rounded-2xl bg-theme-accent hover:opacity-90 text-theme-accent-text font-extrabold text-base shadow-lg transition flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-70 border-2 border-theme-border"
               >
                 {isLoading ? (
                   <>
@@ -477,16 +477,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
           {/* 2. STK PUSH WAITING SCREEN */}
           {flowState === 'stk_waiting' && (
             <div className="py-6 text-center space-y-6">
-              <div className="relative mx-auto w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 animate-pulse">
+              <div className="relative mx-auto w-20 h-20 rounded-full bg-theme-elevated border-2 border-theme-border flex items-center justify-center text-theme-accent animate-pulse">
                 <Smartphone className="w-10 h-10" />
-                <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-theme-accent text-theme-accent-text text-xs font-bold flex items-center justify-center">
                   !
                 </span>
               </div>
 
               <div>
-                <h3 className="text-xl font-black text-stone-900">{t.mpesa.promptSent}</h3>
-                <p className="text-sm text-stone-600 max-w-md mx-auto mt-2 leading-relaxed">
+                <h3 className="text-xl font-black text-theme-text">{t.mpesa.promptSent}</h3>
+                <p className="text-sm text-theme-muted max-w-md mx-auto mt-2 leading-relaxed">
                   {t.mpesa.promptDesc
                     .replace('{amount}', totalAmount.toString())
                     .replace('{orderNumber}', createdOrderNumber)}
@@ -494,54 +494,54 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
               </div>
 
               {/* Countdown / Polling indicator */}
-              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 max-w-sm mx-auto space-y-2">
-                <div className="flex items-center justify-center gap-2 text-xs font-semibold text-stone-700">
-                  <Clock className="w-4 h-4 text-emerald-600" />
+              <div className="p-4 rounded-2xl bg-theme-elevated border-2 border-theme-border max-w-sm mx-auto space-y-2">
+                <div className="flex items-center justify-center gap-2 text-xs font-semibold text-theme-text">
+                  <Clock className="w-4 h-4 text-theme-accent" />
                   <span>{t.mpesa.timeRemaining.replace('{seconds}', countdown.toString())}</span>
                 </div>
-                <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-theme-border h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-emerald-600 h-full transition-all duration-1000 ease-linear"
+                    className="bg-theme-accent h-full transition-all duration-1000 ease-linear"
                     style={{ width: `${(countdown / 30) * 100}%` }}
                   ></div>
                 </div>
-                <div className="text-[11px] text-stone-600">
+                <div className="text-[11px] text-theme-muted">
                   {t.mpesa.waitingForPin}
                 </div>
               </div>
 
               {/* Developer Sandbox Simulation Helper */}
-              <div className="mt-8 p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-left">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 mb-1">
-                  <Sparkles className="w-4 h-4 text-amber-700" />
+              <div className="mt-8 p-4 rounded-2xl bg-theme-elevated border-2 border-theme-border text-left">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-theme-text mb-1">
+                  <Sparkles className="w-4 h-4 text-theme-accent" />
                   <span>{t.mpesa.sandboxSimulator}</span>
                 </div>
-                <p className="text-[11px] text-amber-800 mb-3 leading-relaxed">
+                <p className="text-[11px] text-theme-muted mb-3 leading-relaxed">
                   {t.mpesa.sandboxHelp}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold">
                   <button
                     onClick={() => handleSimulate('success')}
-                    className="px-3 py-2 bg-emerald-700 text-white rounded-xl hover:bg-emerald-800 transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="px-3 py-2 bg-emerald-700 text-white rounded-xl hover:bg-emerald-800 transition cursor-pointer flex items-center justify-center gap-1.5 border border-theme-border"
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
                     <span>Simulate PIN Success</span>
                   </button>
                   <button
                     onClick={() => handleSimulate('cancelled')}
-                    className="px-3 py-2 bg-stone-800 text-stone-100 rounded-xl hover:bg-stone-900 transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="px-3 py-2 bg-theme-surface text-theme-text rounded-xl hover:bg-theme-elevated transition cursor-pointer flex items-center justify-center gap-1.5 border-2 border-theme-border"
                   >
                     <span>Simulate User Cancel</span>
                   </button>
                   <button
                     onClick={() => handleSimulate('insufficient_funds')}
-                    className="px-3 py-2 bg-amber-700 text-white rounded-xl hover:bg-amber-800 transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="px-3 py-2 bg-amber-700 text-white rounded-xl hover:bg-amber-800 transition cursor-pointer flex items-center justify-center gap-1.5 border border-theme-border"
                   >
                     <span>Simulate Low Balance</span>
                   </button>
                   <button
                     onClick={() => handleSimulate('timeout')}
-                    className="px-3 py-2 bg-rose-700 text-white rounded-xl hover:bg-rose-800 transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="px-3 py-2 bg-rose-700 text-white rounded-xl hover:bg-rose-800 transition cursor-pointer flex items-center justify-center gap-1.5 border border-theme-border"
                   >
                     <span>Simulate Handset Timeout</span>
                   </button>
@@ -558,31 +558,31 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
               </div>
 
               <div>
-                <h3 className="text-2xl font-black text-stone-900">{t.mpesa.paymentSuccessful}</h3>
-                <p className="text-sm text-stone-600 mt-1 max-w-md mx-auto">
+                <h3 className="text-2xl font-black text-theme-text">{t.mpesa.paymentSuccessful}</h3>
+                <p className="text-sm text-theme-muted mt-1 max-w-md mx-auto">
                   {t.mpesa.paymentSuccessfulDesc}
                 </p>
               </div>
 
               {/* Receipt Card */}
-              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 text-left max-w-md mx-auto space-y-2 text-xs">
-                <div className="flex justify-between pb-2 border-b border-stone-200">
-                  <span className="text-stone-500">{t.orders.orderNumber}</span>
-                  <span className="font-bold text-stone-900 font-mono">{createdOrderNumber}</span>
+              <div className="p-4 rounded-2xl bg-theme-elevated border-2 border-theme-border text-left max-w-md mx-auto space-y-2 text-xs">
+                <div className="flex justify-between pb-2 border-b-2 border-theme-border">
+                  <span className="text-theme-muted">{t.orders.orderNumber}</span>
+                  <span className="font-bold text-theme-text font-mono">{createdOrderNumber}</span>
                 </div>
-                <div className="flex justify-between pb-2 border-b border-stone-200">
-                  <span className="text-stone-500">{t.mpesa.receiptNumber}</span>
-                  <span className="font-bold text-emerald-800 font-mono tracking-wider">
+                <div className="flex justify-between pb-2 border-b-2 border-theme-border">
+                  <span className="text-theme-muted">{t.mpesa.receiptNumber}</span>
+                  <span className="font-bold text-emerald-700 font-mono tracking-wider">
                     {mpesaReceipt}
                   </span>
                 </div>
-                <div className="flex justify-between pb-2 border-b border-stone-200">
-                  <span className="text-stone-500">M-Pesa Number</span>
-                  <span className="font-medium text-stone-900 font-mono">{phone}</span>
+                <div className="flex justify-between pb-2 border-b-2 border-theme-border">
+                  <span className="text-theme-muted">M-Pesa Number</span>
+                  <span className="font-medium text-theme-text font-mono">{phone}</span>
                 </div>
                 <div className="flex justify-between pt-1">
-                  <span className="text-stone-500">{t.cart.total}</span>
-                  <span className="font-black text-stone-900 text-sm">
+                  <span className="text-theme-muted">{t.cart.total}</span>
+                  <span className="font-black text-theme-text text-sm">
                     {formatPrice(totalAmount)}
                   </span>
                 </div>
@@ -594,13 +594,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
                     handleClose();
                     onOrderCompleted?.(createdOrderId);
                   }}
-                  className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-sm transition cursor-pointer shadow-xs"
+                  className="px-6 py-3 bg-theme-accent hover:opacity-90 text-theme-accent-text font-bold rounded-xl text-sm transition cursor-pointer shadow-xs border-2 border-theme-border"
                 >
                   {t.mpesa.viewOrder}
                 </button>
                 <button
                   onClick={handleClose}
-                  className="px-5 py-3 bg-stone-200 hover:bg-stone-300 text-stone-800 font-semibold rounded-xl text-sm transition cursor-pointer"
+                  className="px-5 py-3 bg-theme-surface hover:bg-theme-elevated text-theme-text font-semibold rounded-xl text-sm transition cursor-pointer border-2 border-theme-border"
                 >
                   {t.mpesa.continueShopping}
                 </button>
@@ -616,8 +616,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
               </div>
 
               <div>
-                <h3 className="text-2xl font-black text-stone-900">{t.mpesa.paymentFailed}</h3>
-                <p className="text-sm text-stone-600 mt-2 max-w-md mx-auto">
+                <h3 className="text-2xl font-black text-theme-text">{t.mpesa.paymentFailed}</h3>
+                <p className="text-sm text-theme-muted mt-2 max-w-md mx-auto">
                   {errorMessage || t.errors.mpesaFailed}
                 </p>
               </div>
@@ -625,13 +625,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ onOrderCompleted }
               <div className="flex items-center justify-center gap-3 pt-2">
                 <button
                   onClick={() => setFlowState('form')}
-                  className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-sm transition cursor-pointer shadow-xs"
+                  className="px-6 py-3 bg-theme-accent hover:opacity-90 text-theme-accent-text font-bold rounded-xl text-sm transition cursor-pointer shadow-xs border-2 border-theme-border"
                 >
                   {t.mpesa.tryAgain}
                 </button>
                 <button
                   onClick={handleClose}
-                  className="px-5 py-3 bg-stone-200 hover:bg-stone-300 text-stone-800 font-semibold rounded-xl text-sm transition cursor-pointer"
+                  className="px-5 py-3 bg-theme-surface hover:bg-theme-elevated text-theme-text font-semibold rounded-xl text-sm transition cursor-pointer border-2 border-theme-border"
                 >
                   {t.common.cancel}
                 </button>

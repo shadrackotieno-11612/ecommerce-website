@@ -90,26 +90,26 @@ export const AuthModal: React.FC = () => {
         className="fixed inset-0 bg-black/65 backdrop-blur-xs transition-opacity"
       />
 
-      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-stone-100 z-10 animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-theme-surface rounded-3xl shadow-2xl border-2 border-theme-border z-10 animate-in fade-in zoom-in-95 duration-150 text-theme-text">
         {/* Header */}
-        <div className="p-6 bg-gradient-to-r from-stone-900 to-emerald-950 text-white relative">
+        <div className="p-6 bg-theme-elevated text-theme-text border-b-2 border-theme-border relative">
           <button
             onClick={closeAuthModal}
-            className="absolute top-4 right-4 p-1.5 rounded-full text-stone-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            className="absolute top-4 right-4 p-1.5 rounded-full text-theme-muted hover:text-theme-text hover:bg-theme-surface transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
-          <div className="w-10 h-10 rounded-xl bg-emerald-600/30 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mb-3">
+          <div className="w-10 h-10 rounded-xl bg-theme-surface border-2 border-theme-border text-theme-accent flex items-center justify-center mb-3">
             <ShieldCheck className="w-5 h-5" />
           </div>
-          <h2 className="text-xl font-black font-['Outfit',sans-serif]">
+          <h2 className="text-xl font-black font-['Outfit',sans-serif] text-theme-text">
             {authModalMode === 'login'
               ? t.auth.loginTitle
               : authModalMode === 'register'
               ? t.auth.registerTitle
               : t.auth.forgotPasswordTitle}
           </h2>
-          <p className="text-xs text-stone-300 mt-1">
+          <p className="text-xs text-theme-muted mt-1">
             {authModalMode === 'login'
               ? t.auth.loginSubtitle
               : authModalMode === 'register'
@@ -137,36 +137,36 @@ export const AuthModal: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
             {authModalMode === 'register' && (
               <div>
-                <label className="block font-bold text-stone-800 mb-1">
+                <label className="block font-bold text-theme-text mb-1">
                   {t.auth.fullName} *
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-stone-500 absolute left-3 top-3" />
+                  <User className="w-4 h-4 text-theme-muted absolute left-3 top-3" />
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="David Kiprono"
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-xs text-black font-semibold placeholder:text-stone-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-hidden"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-xs text-theme-text font-semibold placeholder:text-theme-muted focus:ring-2 focus:ring-theme-accent focus:border-theme-accent focus:outline-hidden"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block font-bold text-stone-800 mb-1">
+              <label className="block font-bold text-theme-text mb-1">
                 {t.auth.email} *
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-stone-500 absolute left-3 top-3" />
+                <Mail className="w-4 h-4 text-theme-muted absolute left-3 top-3" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-9 pr-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-xs text-black font-semibold placeholder:text-stone-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-hidden"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-xs text-theme-text font-semibold placeholder:text-theme-muted focus:ring-2 focus:ring-theme-accent focus:border-theme-accent focus:outline-hidden"
                 />
               </div>
             </div>
@@ -174,32 +174,32 @@ export const AuthModal: React.FC = () => {
             {authModalMode === 'register' && (
               <>
                 <div>
-                  <label className="block font-bold text-stone-800 mb-1">
+                  <label className="block font-bold text-theme-text mb-1">
                     {t.auth.phone} (M-Pesa) *
                   </label>
                   <div className="relative">
-                    <Phone className="w-4 h-4 text-stone-500 absolute left-3 top-3" />
+                    <Phone className="w-4 h-4 text-theme-muted absolute left-3 top-3" />
                     <input
                       type="text"
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="0712 345 678"
-                      className="w-full pl-9 pr-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-xs text-black font-semibold placeholder:text-stone-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-hidden font-mono"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-xs text-theme-text font-semibold placeholder:text-theme-muted focus:ring-2 focus:ring-theme-accent focus:border-theme-accent focus:outline-hidden font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-stone-800 mb-1">
+                  <label className="block font-bold text-theme-text mb-1">
                     {t.auth.preferredLanguage} *
                   </label>
                   <div className="relative">
-                    <Globe className="w-4 h-4 text-stone-500 absolute left-3 top-3" />
+                    <Globe className="w-4 h-4 text-theme-muted absolute left-3 top-3" />
                     <select
                       value={preferredLang}
                       onChange={(e) => setPreferredLang(e.target.value as SupportedLanguage)}
-                      className="w-full pl-9 pr-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-xs text-black font-semibold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-hidden"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-xs text-theme-text font-semibold focus:ring-2 focus:ring-theme-accent focus:border-theme-accent focus:outline-hidden"
                     >
                       {SUPPORTED_LANGUAGES.map((l) => (
                         <option key={l.code} value={l.code} className="text-black font-semibold">
@@ -215,26 +215,26 @@ export const AuthModal: React.FC = () => {
             {authModalMode !== 'forgot' && (
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-bold text-stone-800">{t.auth.password} *</label>
+                  <label className="font-bold text-theme-text">{t.auth.password} *</label>
                   {authModalMode === 'login' && (
                     <button
                       type="button"
                       onClick={() => setAuthModalMode('forgot')}
-                      className="text-[11px] font-bold text-amber-700 hover:text-amber-800 hover:underline cursor-pointer"
+                      className="text-[11px] font-bold text-theme-accent hover:underline cursor-pointer"
                     >
                       {t.auth.forgotPasswordLink}
                     </button>
                   )}
                 </div>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-stone-500 absolute left-3 top-3" />
+                  <Lock className="w-4 h-4 text-theme-muted absolute left-3 top-3" />
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-xs text-black font-semibold placeholder:text-stone-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-hidden"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-xs text-theme-text font-semibold placeholder:text-theme-muted focus:ring-2 focus:ring-theme-accent focus:border-theme-accent focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -242,18 +242,18 @@ export const AuthModal: React.FC = () => {
 
             {authModalMode === 'register' && (
               <div>
-                <label className="block font-bold text-stone-800 mb-1">
+                <label className="block font-bold text-theme-text mb-1">
                   {t.auth.confirmPassword} *
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-stone-500 absolute left-3 top-3" />
+                  <Lock className="w-4 h-4 text-theme-muted absolute left-3 top-3" />
                   <input
                     type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-xs text-black font-semibold placeholder:text-stone-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-hidden"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-theme-surface border-2 border-theme-border rounded-xl text-xs text-theme-text font-semibold placeholder:text-theme-muted focus:ring-2 focus:ring-theme-accent focus:border-theme-accent focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -262,7 +262,7 @@ export const AuthModal: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md transition cursor-pointer active:scale-98 disabled:opacity-70 mt-2"
+              className="w-full py-2.5 rounded-xl bg-theme-accent hover:opacity-90 text-theme-accent-text font-bold text-xs shadow-md transition cursor-pointer active:scale-98 disabled:opacity-70 mt-2 border-2 border-theme-border"
             >
               {isLoading ? (
                 t.common.loading
@@ -277,14 +277,14 @@ export const AuthModal: React.FC = () => {
           </form>
 
           {/* Toggle between Login and Register */}
-          <div className="text-center text-xs text-stone-500 pt-3 border-t border-stone-100">
+          <div className="text-center text-xs text-theme-muted pt-3 border-t-2 border-theme-border">
             {authModalMode === 'login' ? (
               <span>
                 {t.auth.noAccount}{' '}
                 <button
                   type="button"
                   onClick={() => setAuthModalMode('register')}
-                  className="font-bold text-emerald-700 hover:underline cursor-pointer"
+                  className="font-bold text-theme-accent hover:underline cursor-pointer"
                 >
                   {t.auth.registerButton}
                 </button>
@@ -295,7 +295,7 @@ export const AuthModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setAuthModalMode('login')}
-                  className="font-bold text-emerald-700 hover:underline cursor-pointer"
+                  className="font-bold text-theme-accent hover:underline cursor-pointer"
                 >
                   {t.auth.signInButton}
                 </button>

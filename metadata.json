@@ -1,7 +1,8 @@
 {
-  "name": "Zawadi Kenya - Multilingual Marketplace & Services",
+  "name": "jitu stores",
   "description": "Kenya's premier multilingual e-commerce platform for authentic goods, artisanal crafts, and professional services with Safaricom M-Pesa Daraja payment integration in 6 languages.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
-

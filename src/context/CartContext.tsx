@@ -121,8 +121,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hasPhysicalItems = cartItems.some((i) => i.itemType === 'product');
   const hasServices = cartItems.some((i) => i.itemType === 'service');
 
-  // Delivery fee: KES 250 for physical products inside Kenya, free for services or over KES 10,000
-  const deliveryFee = hasPhysicalItems && subtotal < 10000 && subtotal > 0 ? 250 : 0;
+  // Delivery fee: KES 250 for physical products inside Kenya, free for services, 1 KES test products (prod_006 / 1 Bob), or orders over KES 10,000
+  const isOnlyTestItem = cartItems.length > 0 && cartItems.every((i) => i.price <= 1 || i.itemId === 'prod_006' || i.itemId === 'prod_test_001');
+  const deliveryFee = hasPhysicalItems && subtotal < 10000 && subtotal > 0 && !isOnlyTestItem ? 250 : 0;
   const discount = 0;
   const totalAmount = subtotal + deliveryFee - discount;
 

@@ -24,10 +24,10 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onSelectServi
   return (
     <div
       onClick={() => onSelectService?.(service)}
-      className="group bg-white rounded-2xl border-2 border-stone-200 hover:border-amber-400 shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col cursor-pointer text-stone-900"
+      className="group bg-theme-surface rounded-2xl border-2 border-theme-border hover:border-theme-accent shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col cursor-pointer text-theme-text"
     >
       {/* Service Image Container */}
-      <div className="relative aspect-16/9 bg-stone-100 overflow-hidden">
+      <div className="relative aspect-16/9 bg-theme-elevated overflow-hidden">
         <img
           src={service.images[0] || 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=800&q=80'}
           alt={localizedName}
@@ -36,14 +36,14 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onSelectServi
         />
 
         {/* Location Badge */}
-        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-stone-900 text-[11px] font-bold flex items-center gap-1 border border-stone-300 shadow-xs">
-          <MapPin className="w-3 h-3 text-amber-600" />
+        <div className="absolute top-3 left-3 bg-theme-surface/95 backdrop-blur-md px-2.5 py-1 rounded-full text-theme-text text-[11px] font-bold flex items-center gap-1 border border-theme-border shadow-xs">
+          <MapPin className="w-3 h-3 text-theme-accent" />
           <span className="truncate max-w-[150px]">{service.location}</span>
         </div>
 
         {/* Duration Badge */}
-        <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-stone-900 text-[11px] font-bold flex items-center gap-1 border border-stone-300 shadow-xs">
-          <Clock className="w-3 h-3 text-amber-600" />
+        <div className="absolute bottom-3 left-3 bg-theme-surface/95 backdrop-blur-md px-2.5 py-1 rounded-full text-theme-text text-[11px] font-bold flex items-center gap-1 border border-theme-border shadow-xs">
+          <Clock className="w-3 h-3 text-theme-accent" />
           <span>{service.duration}</span>
         </div>
       </div>
@@ -52,42 +52,42 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onSelectServi
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
           {/* Provider & Rating */}
-          <div className="flex items-center justify-between text-xs text-stone-600 mb-1.5 font-semibold">
-            <span className="font-bold text-emerald-800 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+          <div className="flex items-center justify-between text-xs text-theme-muted mb-1.5 font-semibold">
+            <span className="font-bold text-theme-text flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               {service.provider}
             </span>
-            <div className="flex items-center text-amber-600 font-bold">
-              <Star className="w-3.5 h-3.5 fill-current mr-0.5 text-amber-600" />
+            <div className="flex items-center text-amber-500 font-bold">
+              <Star className="w-3.5 h-3.5 fill-current mr-0.5" />
               <span>{service.rating.toFixed(1)}</span>
             </div>
           </div>
 
           {/* Title */}
-          <h3 className="font-black text-stone-950 group-hover:text-amber-700 transition line-clamp-1 text-sm sm:text-base leading-snug">
+          <h3 className="font-black text-theme-text group-hover:text-theme-accent transition line-clamp-1 text-sm sm:text-base leading-snug">
             {localizedName}
           </h3>
 
           {/* Description */}
-          <p className="text-stone-600 text-xs line-clamp-2 mt-1 leading-relaxed font-medium">
+          <p className="text-theme-muted text-xs line-clamp-2 mt-1 leading-relaxed font-medium">
             {localizedDesc}
           </p>
         </div>
 
         {/* Price & Book Button */}
-        <div className="mt-4 pt-3 border-t-2 border-stone-100 flex items-center justify-between">
+        <div className="mt-4 pt-3 border-t-2 border-theme-border flex items-center justify-between">
           <div>
-            <div className="text-[10px] text-stone-500 uppercase font-bold">
+            <div className="text-[10px] text-theme-muted uppercase font-bold">
               Fixed Service Fee
             </div>
-            <div className="text-base sm:text-lg font-black text-amber-700 font-['Outfit',sans-serif]">
+            <div className="text-base sm:text-lg font-black text-theme-accent font-['Outfit',sans-serif]">
               {formatPrice(service.price)}
             </div>
           </div>
 
           <button
             onClick={handleBookService}
-            className="px-3.5 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-stone-950 transition flex items-center gap-1.5 cursor-pointer shadow-sm border border-amber-600 active:scale-95"
+            className="px-3.5 py-2 rounded-xl text-xs font-black bg-theme-accent hover:opacity-90 text-theme-accent-text transition flex items-center gap-1.5 cursor-pointer shadow-sm border-2 border-theme-border active:scale-95"
           >
             <Calendar className="w-3.5 h-3.5" />
             <span>{t.services.bookService}</span>
